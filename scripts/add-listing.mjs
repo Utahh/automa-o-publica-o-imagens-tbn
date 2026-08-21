@@ -29,6 +29,7 @@ import { setTimeout as sleep } from "timers/promises";
 
 import {
   initFirebase,
+  initCloudinary,
   parseListingMarkdown,
   buildPropertyFromMarkdown,
   classifyListingFiles,
@@ -39,6 +40,15 @@ import {
   cleanupTempDir,
   MD_FILENAME,
 } from "./lib/pipeline.mjs";
+
+// Credenciais do Cloudinary em desenvolvimento local: crie um
+// ".env.local" (já ignorado pelo git) com CLOUDINARY_CLOUD_NAME,
+// CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET.
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // arquivo opcional — em CI as credenciais vêm dos secrets do GitHub
+}
 
 const INCOMING_DIR = "incoming";
 const PROCESSED_DIR = path.join(INCOMING_DIR, "processed");
@@ -156,8 +166,9 @@ async function main() {
     return;
   }
 
-  console.log(`\nInicializando Firebase...`);
+  console.log(`\nInicializando Firebase e Cloudinary...`);
   initFirebase();
+  initCloudinary();
 
   console.log(`\nProcessando ${folders.length} pasta(s) em "${INCOMING_DIR}/"...\n`);
 

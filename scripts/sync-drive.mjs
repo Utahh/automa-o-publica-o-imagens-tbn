@@ -20,6 +20,7 @@ import { readFileSync, existsSync } from "fs";
 
 import {
   initFirebase,
+  initCloudinary,
   firestore,
   parseListingMarkdown,
   buildPropertyFromMarkdown,
@@ -31,6 +32,14 @@ import {
   cleanupTempDir,
   MD_FILENAME,
 } from "./lib/pipeline.mjs";
+
+// Permite testar este script localmente com um ".env.local" (ignorado
+// pelo git). No GitHub Actions as credenciais vêm dos secrets/vars.
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // arquivo opcional
+}
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const SYNC_STATE_COLLECTION = "driveSync";
@@ -204,6 +213,7 @@ async function main() {
   const rootFolderId = getRootFolderId();
 
   initFirebase(serviceAccount);
+  initCloudinary();
 
   const auth = new GoogleAuth({
     credentials: serviceAccount,

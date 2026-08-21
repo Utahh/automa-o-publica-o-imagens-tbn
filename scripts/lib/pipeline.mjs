@@ -4,20 +4,25 @@
 // fluxo manual do desenvolvedor) quanto por sync-drive.mjs (Google
 // Drive, fluxo automático via GitHub Actions).
 //
+// Fotos ficam no Cloudinary (não no Firebase Storage — desde fev/2026 o
+// Storage do Firebase exige o plano pago Blaze mesmo dentro da cota
+// grátis; o Cloudinary tem plano grátis real, sem cartão). Os dados do
+// imóvel continuam no Firestore (plano Spark, grátis, não afetado).
+//
 // Ver docs/ARQUITETURA.md e GUIA-CORRETOR.md para o contrato de pastas.
 import sharp from "sharp";
+import { v2 as cloudinary } from "cloudinary";
 import { existsSync, readFileSync, mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import path from "path";
 
-// Firebase Admin SDK
+// Firebase Admin SDK (só Firestore)
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { getStorage } from "firebase-admin/storage";
 
 export const FIREBASE_PROJECT_ID = "tbn-imoveis-site";
-export const FIREBASE_STORAGE_BUCKET = "tbn-imoveis-site.firebasestorage.app";
 export const FIRESTORE_COLLECTION = "imoveis";
+export const CLOUDINARY_FOLDER = "imoveis";
 
 export const IMAGE_EXT = [".png", ".jpg", ".jpeg", ".webp"];
 export const MD_FILENAME = "imovel.md";
@@ -27,16 +32,12 @@ export const READY_MARKER = "PRONTO.txt";
 const MAX_WIDTH = 1920;
 const QUALITY = 78;
 
-// ─── Firebase ───────────────────────────────────────────────────────────────
+// ─── Firebase (Firestore) ───────────────────────────────────────────────────
 export function initFirebase(serviceAccountJson) {
   if (getApps().length > 0) return;
 
   if (serviceAccountJson) {
-    initializeApp({
-      credential: cert(serviceAccountJson),
-      projectId: FIREBASE_PROJECT_ID,
-      storageBucket: FIREBASE_STORAGE_BUCKET,
-    });
+    initializeApp({ credential: cert(serviceAccountJson), projectId: FIREBASE_PROJECT_ID });
     return;
   }
 
@@ -45,19 +46,31 @@ export function initFirebase(serviceAccountJson) {
     initializeApp({
       credential: cert(JSON.parse(readFileSync(serviceAccountPath, "utf-8"))),
       projectId: FIREBASE_PROJECT_ID,
-      storageBucket: FIREBASE_STORAGE_BUCKET,
     });
   } else {
     // Application Default Credentials (ex.: `firebase login` local)
-    initializeApp({
-      projectId: FIREBASE_PROJECT_ID,
-      storageBucket: FIREBASE_STORAGE_BUCKET,
-    });
+    initializeApp({ projectId: FIREBASE_PROJECT_ID });
   }
 }
 
 export function firestore() {
   return getFirestore();
+}
+
+// ─── Cloudinary (fotos) ─────────────────────────────────────────────────────
+// Credenciais via variáveis de ambiente: CLOUDINARY_CLOUD_NAME,
+// CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET (GitHub Secrets em produção,
+// .env.local em desenvolvimento — ver GUIA-CORRETOR.md / ARQUITETURA.md).
+export function initCloudinary() {
+  const cloud_name = process.env.CLOUDINARY_CLOUD_NAME;
+  const api_key = process.env.CLOUDINARY_API_KEY;
+  const api_secret = process.env.CLOUDINARY_API_SECRET;
+  if (!cloud_name || !api_key || !api_secret) {
+    throw new Error(
+      "Credenciais do Cloudinary não encontradas. Defina CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET."
+    );
+  }
+  cloudinary.config({ cloud_name, api_key, api_secret, secure: true });
 }
 
 // ─── Helpers de texto ───────────────────────────────────────────────────────
@@ -258,14 +271,13 @@ export async function convertToWebp(input, outFilePath) {
     .toFile(outFilePath);
 }
 
-export async function uploadToStorage(localPath, storagePath) {
-  const bucket = getStorage().bucket();
-  await bucket.upload(localPath, {
-    destination: storagePath,
-    metadata: { contentType: "image/webp" },
-    predefinedAcl: "publicRead",
+export async function uploadToCloudinary(localPath, publicId) {
+  const result = await cloudinary.uploader.upload(localPath, {
+    public_id: publicId,
+    overwrite: true,
+    resource_type: "image",
   });
-  return `https://storage.googleapis.com/${FIREBASE_STORAGE_BUCKET}/${storagePath}`;
+  return result.secure_url;
 }
 
 // Diretório temporário isolado para conversão de imagens de uma execução.
@@ -284,8 +296,8 @@ export async function processPhoto({ input, id, num, label, title, tmpDir }) {
   const localPath = path.join(tmpDir, outFile);
 
   await convertToWebp(input, localPath);
-  const storagePath = `imoveis/${id}/${outFile}`;
-  const src = await uploadToStorage(localPath, storagePath);
+  const publicId = `${CLOUDINARY_FOLDER}/${id}/${num}-${labelSlug}`;
+  const src = await uploadToCloudinary(localPath, publicId);
 
   return {
     src,

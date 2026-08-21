@@ -13,6 +13,7 @@
     "publish": "npm run add-listing && npm run build && vercel --prod --yes --project tbn-imoveis"
   },
   "dependencies": {
+    "cloudinary": "^2.5.1",
     "firebase": "^12.18.0",
     "firebase-admin": "^14.3.0",
     "framer-motion": "^13.0.0",
