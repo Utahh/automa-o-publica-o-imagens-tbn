@@ -216,7 +216,7 @@ async function main() {
 
   if (changed) {
     console.log("\n✅ Prontinho!");
-    console.log("   • Fotos: Firebase Storage");
+    console.log("   • Fotos: Cloudinary");
     console.log("   • Dados: Firestore");
     console.log("   • Fallback local: src/data/properties.json");
     console.log('\nRode "npm run dev" para conferir, ou "npm run publish" para publicar.');
