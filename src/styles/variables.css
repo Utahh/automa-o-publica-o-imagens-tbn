@@ -1,0 +1,39 @@
+:root {
+  /* Paleta */
+  --navy-900: #071739;
+  --navy-800: #0d2148;
+  --navy-700: #16305f;
+  --blue-600: #4b6382;
+  --blue-400: #7f97b3;
+  --blue-300: #a4b5c4;
+  --blue-100: #cdd5db;
+  --sand-600: #a68868;
+  --sand-500: #c3a37e;
+  --sand-300: #e3c39d;
+  --sand-100: #f4e9db;
+  --white: #ffffff;
+  --bg: #f7f7f5;
+  --bg-alt: #eef1f4;
+  --text-main: #101a2e;
+  --text-muted: #4b5768;
+  --success: #3f8f5f;
+
+  /* Tipografia */
+  --font-heading: "Poppins", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+
+  /* Espaçamento e forma */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 28px;
+  --shadow-sm: 0 4px 14px rgba(7, 23, 57, 0.08);
+  --shadow-md: 0 12px 32px rgba(7, 23, 57, 0.14);
+  --shadow-lg: 0 24px 60px rgba(7, 23, 57, 0.22);
+  --container: 1180px;
+
+  /* Transições fluidas */
+  --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-fast: 0.2s var(--ease-fluid);
+  --transition-mid: 0.4s var(--ease-fluid);
+  --transition-slow: 0.7s var(--ease-fluid);
+}

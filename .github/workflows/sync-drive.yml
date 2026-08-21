@@ -1,0 +1,35 @@
+name: Sincronizar imóveis do Google Drive
+
+on:
+  schedule:
+    # A cada 15 minutos. O agendador do GitHub não é exato sob carga —
+    # trate como "em até ~15-20 min", não como um relógio preciso.
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {} # botão "Run workflow" na aba Actions, para publicar na hora
+
+concurrency:
+  group: sync-drive
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Rodar sincronização
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          DRIVE_FOLDER_ID: ${{ vars.DRIVE_FOLDER_ID }}
+        run: npm run sync-drive

@@ -1,0 +1,153 @@
+[
+  {
+    "id": "casa-jardim-acacias",
+    "title": "Casa térrea com fachada em pedra",
+    "dealType": "Venda",
+    "price": 480000,
+    "address": {
+      "neighborhood": "Jardim das Acácias",
+      "city": "Botucatu",
+      "state": "SP"
+    },
+    "description": [
+      "Casa térrea bem localizada, com fachada em pedra canjiquinha, portão eletrônico e amplo espaço para garagem. Ambientes bem distribuídos e acabamento de qualidade."
+    ],
+    "specs": [
+      {
+        "label": "Quartos",
+        "value": "3",
+        "icon": "bed"
+      },
+      {
+        "label": "Banheiros",
+        "value": "2",
+        "icon": "bath"
+      },
+      {
+        "label": "Vagas",
+        "value": "2",
+        "icon": "car"
+      },
+      {
+        "label": "Área construída",
+        "value": "140 m²",
+        "icon": "ruler"
+      }
+    ],
+    "amenities": [
+      "Portão eletrônico",
+      "Fachada em pedra natural",
+      "Quintal amplo",
+      "Rua asfaltada",
+      "Documentação em dia",
+      "Aceita financiamento"
+    ],
+    "gallery": [
+      {
+        "src": "/images/casa-jardim-acacias/01-fachada.webp",
+        "alt": "Casa térrea com fachada em pedra - Fachada",
+        "caption": "Fachada"
+      }
+    ]
+  },
+  {
+    "id": "casa-vila-progresso",
+    "title": "Casa térrea com quintal amplo",
+    "dealType": "Aluguel",
+    "price": 1800,
+    "address": {
+      "neighborhood": "Vila Progresso",
+      "city": "Botucatu",
+      "state": "SP"
+    },
+    "description": [
+      "Casa térrea com telhado colonial, murada e com portão gradeado. Ótima opção para quem busca tranquilidade em rua residencial, perto de comércio e transporte."
+    ],
+    "specs": [
+      {
+        "label": "Quartos",
+        "value": "2",
+        "icon": "bed"
+      },
+      {
+        "label": "Banheiros",
+        "value": "1",
+        "icon": "bath"
+      },
+      {
+        "label": "Vagas",
+        "value": "1",
+        "icon": "car"
+      },
+      {
+        "label": "Área construída",
+        "value": "110 m²",
+        "icon": "ruler"
+      }
+    ],
+    "amenities": [
+      "Murado e gradeado",
+      "Telhado colonial",
+      "Próximo ao transporte público",
+      "Rua tranquila",
+      "Pronta para morar"
+    ],
+    "gallery": [
+      {
+        "src": "/images/casa-vila-progresso/01-fachada.webp",
+        "alt": "Casa térrea com quintal amplo - Fachada",
+        "caption": "Fachada"
+      }
+    ]
+  },
+  {
+    "id": "apartamento-le-ville",
+    "title": "Apartamento no Le Ville Residence",
+    "dealType": "Venda",
+    "price": 320000,
+    "address": {
+      "neighborhood": "Le Ville Residence",
+      "city": "Botucatu",
+      "state": "SP"
+    },
+    "description": [
+      "Unidade em condomínio fechado, com portaria e controle de acesso. Condomínio bem cuidado, área comum completa e ótima localização."
+    ],
+    "specs": [
+      {
+        "label": "Quartos",
+        "value": "2",
+        "icon": "bed"
+      },
+      {
+        "label": "Banheiros",
+        "value": "1",
+        "icon": "bath"
+      },
+      {
+        "label": "Vagas",
+        "value": "1",
+        "icon": "car"
+      },
+      {
+        "label": "Área privativa",
+        "value": "58 m²",
+        "icon": "ruler"
+      }
+    ],
+    "amenities": [
+      "Condomínio fechado",
+      "Portaria 24h",
+      "Área de lazer completa",
+      "Controle de acesso",
+      "Próximo a comércios"
+    ],
+    "gallery": [
+      {
+        "src": "/images/apartamento-le-ville/01-entrada-condominio.webp",
+        "alt": "Apartamento no Le Ville Residence - Entrada do condomínio",
+        "caption": "Entrada do condomínio"
+      }
+    ]
+  }
+]

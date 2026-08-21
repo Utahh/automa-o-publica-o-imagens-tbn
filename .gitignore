@@ -1,0 +1,40 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# fotos originais (não otimizadas) aguardando processamento
+incoming/
+
+# rascunhos/capturas de tela soltas, não são assets do site
+Fotos/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Firebase
+firebase-debug.log*
+firestore-debug.log*
+storage-debug.log*
+.firebase/
+
+# Chaves de conta de serviço (NÃO commitar nunca)
+service-account*.json
+*-service-account.json

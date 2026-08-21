@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Fotos dos imóveis: leitura pública, escrita apenas via Admin SDK
+    match /imoveis/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
