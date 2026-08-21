@@ -26,7 +26,7 @@ export const broker = {
     "Toninho acompanha cada cliente pessoalmente, entendendo suas necessidades antes de indicar qualquer imóvel. Para ele, vender ou alugar uma casa não é fechar mais um contrato — é ajudar alguém a começar um novo capítulo.",
   ],
   quote:
-    "Aqui, comprar ou alugar um imóvel não é apenas mais uma venda. É uma experiência conduzida com cuidado, do primeiro "oi" até a entrega das chaves.",
+    "Aqui, comprar ou alugar um imóvel não é apenas mais uma venda. É uma experiência conduzida com cuidado, do primeiro “oi” até a entrega das chaves.",
   values: [
     {
       title: "Atendimento humano",

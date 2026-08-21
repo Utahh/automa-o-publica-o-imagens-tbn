@@ -175,7 +175,7 @@ export function buildPropertyFromMarkdown({ id, parsed, gallery }) {
   // fica salvo no banco (uso interno/CRM) mas não é exibido na página do
   // imóvel — é prática comum no mercado imobiliário evitar publicar o
   // endereço exato antes do contato com o corretor.
-  const [neighborhood, cityState] = splitAddress(parsed.bairro, parsed.endereco);
+  const cityState = parseCityState(parsed.endereco);
 
   return {
     id,
@@ -197,12 +197,12 @@ export function buildPropertyFromMarkdown({ id, parsed, gallery }) {
   };
 }
 
-function splitAddress(bairro, endereco) {
+function parseCityState(endereco) {
   // Tenta extrair "Cidade/UF" do final do endereço, ex:
   // "Rua das Flores, 123 - Botucatu/SP"
   const m = (endereco || "").match(/([\p{L}\s]+)\/([A-Za-z]{2})\s*$/u);
-  if (m) return [bairro, { city: m[1].trim(), state: m[2].toUpperCase() }];
-  return [bairro, { city: "Botucatu", state: "SP" }];
+  if (m) return { city: m[1].trim(), state: m[2].toUpperCase() };
+  return { city: "Botucatu", state: "SP" };
 }
 
 // ─── Classificação dos arquivos de uma pasta de imóvel ─────────────────────
