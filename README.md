@@ -18,7 +18,7 @@ Abra o endereço mostrado no terminal (geralmente `http://localhost:5173`).
 Existem dois jeitos, com o **mesmo formato de pasta**:
 
 - **Automático (produção)**: organize a pasta do imóvel no Google Drive.
-  Um robô (GitHub Actions) publica sozinho em até ~15 minutos, sem precisar
+  Um robô (GitHub Actions) publica sozinho em até ~5-10 minutos, sem precisar
   rodar nada aqui. Veja o passo a passo em **[`GUIA-CORRETOR.md`](GUIA-CORRETOR.md)**.
 - **Manual (para testar localmente antes de subir pro Drive)**:
 

@@ -9,7 +9,7 @@ dia é só o `GUIA-CORRETOR.md`.
 
 ```
 Você organiza a pasta   Google Drive          GitHub Actions            Firestore (dados)        Vercel
-   do imóvel        ──▶  (arquivos)   ──▶   (roda a cada 15min)  ──▶    Cloudinary (fotos)  ──▶  Site (React)
+   do imóvel        ──▶  (arquivos)   ──▶   (roda a cada 5min)  ──▶    Cloudinary (fotos)  ──▶  Site (React)
  (imovel.md, capa,        │                  scripts/sync-drive.mjs                                lê os dados
   fotos, PRONTO.txt)      │                                                                         ao vivo
                           └── continua sendo SEU Drive, o robô só lê (permissão de Leitor)
@@ -19,7 +19,7 @@ Você organiza a pasta   Google Drive          GitHub Actions            Firesto
   imóvel no Google Drive, seguindo o contrato descrito em
   `GUIA-CORRETOR.md`.
 - **Automação**: um workflow do GitHub Actions (`.github/workflows/sync-drive.yml`)
-  roda `scripts/sync-drive.mjs` a cada ~15 minutos (ou sob demanda, pelo
+  roda `scripts/sync-drive.mjs` a cada ~5 minutos (ou sob demanda, pelo
   botão "Run workflow"). Ele lê a pasta raiz do Drive, encontra pastas com
   `PRONTO.txt`, converte as fotos para `.webp` (mais leve), sobe pro
   **Cloudinary** e grava os dados no **Firestore**.
@@ -49,8 +49,9 @@ Você organiza a pasta   Google Drive          GitHub Actions            Firesto
 | Decisão | Por quê |
 |---|---|
 | **Cloudinary** em vez de Firebase Storage | Firebase Storage passou a exigir o plano Blaze (cartão) mesmo dentro da cota grátis, a partir de fev/2026. Cloudinary tem plano grátis real (sem cartão), com API própria e otimização de imagem embutida. |
-| **GitHub Actions** em vez de Firebase Cloud Functions agendada | Cloud Functions agendadas também exigem o plano Blaze. GitHub Actions é grátis sem cartão, com minutos de sobra para rodar um script curto a cada 15 min (~50h/mês de uso real, dentro do limite de 2.000 min/mês do plano gratuito). |
+| **GitHub Actions** em vez de Firebase Cloud Functions agendada | Cloud Functions agendadas também exigem o plano Blaze. GitHub Actions é grátis sem cartão. |
 | **GitHub Actions** em vez de Vercel Cron | O Vercel Hobby (grátis) limita cron jobs a 1x por dia — um imóvel novo podia demorar até 24h para aparecer. |
+| **Repositório público** em vez de privado | Repositório privado só tem 2.000 min/mês grátis de Actions — cada execução conta como 1 min (arredondado pra cima), e mesmo o cron original de 15 em 15 min (~2.880 min/mês) já estourava essa cota. Repositório **público** tem Actions **ilimitado e grátis**, o que permite rodar no intervalo mínimo do GitHub (5 min) sem risco de cobrança. Nenhuma credencial fica exposta — Secrets do GitHub são criptografados e nunca aparecem no código nem nos logs, em repositório público ou privado; só o código-fonte do site fica visível, sem nada sigiloso. |
 | **Estado de sync no Firestore**, não no Drive | Evita precisar dar permissão de **escrita** ao service account no seu Drive. Ele só precisa ser "Leitor" da pasta — mais seguro, e mais simples de configurar. |
 | **`PRONTO.txt` como marcador** | Sem isso, o robô podia publicar um imóvel pela metade enquanto as fotos ainda estão subindo (Drive sincroniza arquivo por arquivo). |
 | **Endereço completo salvo mas não exibido publicamente** | Prática comum no mercado imobiliário: evita visitas "espontâneas" sem o corretor. Fácil de reverter (ver abaixo). |
@@ -63,7 +64,7 @@ Você organiza a pasta   Google Drive          GitHub Actions            Firesto
 | Vercel (Hobby) | Hospedagem do site | R$ 0 |
 | Firebase Firestore (Spark) | Dados dos imóveis | R$ 0 (até 1 GiB armazenado / 50k leituras por dia — bem acima do necessário) |
 | Cloudinary (Free) | Fotos dos imóveis | R$ 0 (25 créditos/mês — 1 crédito = 1 GB de armazenamento OU 1 GB de banda OU 1.000 transformações; sem cartão) |
-| GitHub Actions | Roda o sync a cada 15 min | R$ 0 (2.000 min/mês grátis; o job usa poucos segundos a minutos por execução) |
+| GitHub Actions | Roda o sync a cada 5 min | R$ 0 (repositório **público** → Actions ilimitado; em repositório privado precisaria ficar em ~15-20 min para caber nos 2.000 min/mês grátis) |
 | Google Drive | Onde você organiza as fotos | R$ 0 (usa o seu Drive pessoal já existente) |
 | **Domínio** | O único custo real | ~R$ 40–60/ano, dependendo do registrador |
 
@@ -154,7 +155,7 @@ Na aba **Actions** do repositório, escolha o workflow
 manualmente. Acompanhe o log — ele mostra pasta por pasta o que foi
 publicado, ignorado ou está aguardando o `PRONTO.txt`.
 
-Depois disso, o cron (`*/15 * * * *`) assume sozinho.
+Depois disso, o cron (`*/5 * * * *`) assume sozinho.
 
 ### 8. Vercel (sem mudanças)
 

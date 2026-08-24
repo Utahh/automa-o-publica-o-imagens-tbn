@@ -2,7 +2,7 @@
 
 Este é o guia rápido de "arrastar arquivo" — sem precisar mexer em código
 nem rodar comando nenhum. Basta organizar uma pasta no Google Drive e, em
-até ~15 minutos, o imóvel aparece sozinho no site.
+até ~5-10 minutos, o imóvel aparece sozinho no site.
 
 ## 1. Onde subir
 
@@ -108,7 +108,7 @@ Banheiros, Vagas, Área, Comodidades (separadas por vírgula).
 
 ## 4. Depois de criar o `PRONTO.txt`
 
-Em até ~15 minutos o imóvel aparece no site automaticamente. Você pode
+Em até ~5-10 minutos o imóvel aparece no site automaticamente. Você pode
 acompanhar (ou forçar uma checagem imediata) na aba **Actions** do
 repositório no GitHub, rodando manualmente o workflow
 **"Sincronizar imóveis do Google Drive"**.
