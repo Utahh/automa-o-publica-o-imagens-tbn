@@ -55,7 +55,7 @@ Você organiza a pasta   Google Drive          GitHub Actions            Firesto
 | **Estado de sync no Firestore**, não no Drive | Evita precisar dar permissão de **escrita** ao service account no seu Drive. Ele só precisa ser "Leitor" da pasta — mais seguro, e mais simples de configurar. |
 | **`PRONTO.txt` como marcador** | Sem isso, o robô podia publicar um imóvel pela metade enquanto as fotos ainda estão subindo (Drive sincroniza arquivo por arquivo). |
 | **Endereço completo salvo mas não exibido publicamente** | Prática comum no mercado imobiliário: evita visitas "espontâneas" sem o corretor. Fácil de reverter (ver abaixo). |
-| **`gallery[0]` = foto de capa** | O frontend já usava `gallery[0]` como capa em todo lugar (cards, banner da página, lightbox) — ao colocar a capa como primeiro item da galeria, **zero mudança de UI foi necessária**. |
+| **`cover` separado + `gallery[0]` = mesma foto** | O pipeline sempre inclui a capa como primeiro item de `gallery` também, então tanto um campo `cover` dedicado quanto o índice `[0]` da galeria mostram a mesma foto — qualquer um dos dois funciona pra exibir a capa. |
 
 ## Custos (mantendo tudo dentro do free tier)
 
@@ -157,26 +157,47 @@ publicado, ignorado ou está aguardando o `PRONTO.txt`.
 
 Depois disso, o cron (`*/5 * * * *`) assume sozinho.
 
-### 8. Vercel (sem mudanças)
+### 8. Vercel
 
 O deploy do site continua manual, só quando o **código** muda:
 
 ```bash
 npm run build
-vercel --prod --yes --project tbn-imoveis
+vercel --prod --yes --project toninho-bomnome
 ```
 
 Imóveis novos **não** precisam disso — eles aparecem via Firestore em
 tempo real.
 
+## O frontend (React + TypeScript + Tailwind)
+
+Em 24/08/2026 o frontend foi trocado pelo design "Planta aberta"
+(recuperado de um deploy anterior no Vercel via `vercel api` — o projeto
+tinha sido gerado numa sessão de design anterior mas nunca chegou a ser
+versionado em Git nem ligado a dados reais). A automação (Drive →
+GitHub Actions → Firestore/Cloudinary) não mudou — só o que lê e exibe
+os dados mudou.
+
+O contrato de dados entre o pipeline e o frontend é o tipo `Property`
+em `src/types.ts`. Qualquer campo novo precisa existir dos dois lados:
+em `scripts/lib/pipeline.mjs` (quem escreve no Firestore) e em
+`src/types.ts` + nos componentes que exibem esse campo.
+
+Suporte a aluguel (`dealType: "Venda" | "Aluguel"`) foi adicionado por
+cima do design original, que só previa venda — por isso `status`
+(`Disponível`/`Em negociação`) e `dealType` são campos separados: um
+descreve a fase do negócio, o outro o tipo de negócio.
+
 ## Onde mexer se quiser mudar algo
 
 - **Frequência do sync**: `.github/workflows/sync-drive.yml`, linha do `cron`.
-- **Exibir o endereço completo na página do imóvel**: `src/pages/PropertyPage.jsx`
-  (o dado já vem em `property.address.street`, só falta renderizar).
+- **Exibir o endereço completo na página do imóvel**: `src/pages/PropertyDetail.tsx`
+  (o dado já vem em `property.street`, só falta renderizar).
 - **Formato/tags aceitas no `imovel.md`**: `scripts/lib/pipeline.mjs`,
   função `parseListingMarkdown`.
 - **Regras de quais arquivos viram capa/foto/são ignorados**:
   `scripts/lib/pipeline.mjs`, função `classifyListingFiles`.
 - **Qualidade/tamanho das fotos**: `scripts/lib/pipeline.mjs`, constantes
   `MAX_WIDTH` e `QUALITY`.
+- **Faixas de preço do filtro/busca**: `src/pages/Imoveis.tsx` e
+  `src/components/HeroSearch.tsx`, objeto `priceRanges`.

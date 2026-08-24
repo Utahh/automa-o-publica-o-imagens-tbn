@@ -1,0 +1,24 @@
+{
+  "name": "Toninho Bomnome — Corretor de Imóveis",
+  "short_name": "Toninho Bomnome",
+  "description": "Encontre seu próximo imóvel com o Toninho Bomnome, corretor CRECI 00.000-F.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F1214",
+  "theme_color": "#0F1214",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "960x960",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -25,6 +25,9 @@ chk-*.png
 final-*.png
 *.bak
 
+# backup temporário do frontend anterior (migração pro design toninho-bomnome)
+_backup-old-frontend/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

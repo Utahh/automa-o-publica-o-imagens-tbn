@@ -55,6 +55,9 @@ embaixo de cada uma.
 # Casa térrea com fachada em pedra
 
 ## Tipo
+Casa
+
+## Negócio
 Venda
 
 ## Bairro
@@ -72,6 +75,10 @@ churrasqueira. Reformada recentemente, pronta para morar.
 
 Fica a poucos minutos do centro, em rua tranquila e arborizada.
 
+## O que só quem mora perto sabe
+A padaria da esquina abre até tarde, e a rua é tranquila mesmo na hora
+do rush — quase não passa carro de passagem.
+
 ## Quartos
 3
 
@@ -82,24 +89,34 @@ Fica a poucos minutos do centro, em rua tranquila e arborizada.
 2
 
 ## Área
-140 m²
+140
 
-## Comodidades
-Portão eletrônico, Quintal amplo, Rua asfaltada
+## Destaque
+Sim
 ```
 
-**Campos obrigatórios:** título (a primeira linha, com `#`), Tipo, Bairro,
-Endereço, Valor e Descrição.
+**Campos obrigatórios:** título (a primeira linha, com `#`), Tipo, Negócio,
+Bairro, Endereço, Valor, Descrição e "O que só quem mora perto sabe".
 
-**Campos opcionais** (só aparecem no site se você preencher): Quartos,
-Banheiros, Vagas, Área, Comodidades (separadas por vírgula).
+**Campos opcionais** (viram 0 se não preencher): Quartos, Banheiros, Vagas,
+Área, Destaque.
 
-- `Tipo` aceita **Venda** ou **Aluguel** (qualquer variação com "alug"
-  no meio conta como aluguel).
+- `Tipo` aceita exatamente um destes 4: **Casa**, **Apartamento**,
+  **Cobertura** ou **Sobrado**.
+- `Negócio` aceita **Venda** ou **Aluguel** (qualquer variação com "alug"
+  no meio conta como aluguel — nesse caso o valor é entendido como o
+  aluguel mensal).
 - `Valor` aceita `R$ 480.000`, `480.000,00` ou só `480000` — o robô
   entende os três formatos.
 - `Descrição` pode ter vários parágrafos — só deixe uma linha em branco
   entre eles.
+- **"O que só quem mora perto sabe"** é a marca registrada do site: uma
+  informação real, pessoal, que só quem já visitou o bairro saberia (tipo
+  de vizinhança, barulho, comércio por perto, sol da manhã/tarde). Aparece
+  destacada na página do imóvel — não deixe genérico.
+- `Área` é só o número em m² (ex: `140`, sem "m²" no final).
+- `Destaque` (Sim/Não) controla se o imóvel aparece na seção "Imóveis em
+  destaque" da página inicial.
 - O **Endereço completo fica salvo no sistema**, mas por padrão **não é
   exibido publicamente no site** (só bairro/cidade aparecem) — é prática
   comum no mercado imobiliário evitar publicar o endereço exato antes do

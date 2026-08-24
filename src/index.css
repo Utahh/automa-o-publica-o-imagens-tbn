@@ -1,3 +1,98 @@
-#root {
-  min-height: 100svh;
+@import "tailwindcss";
+
+@theme {
+  /* Toninho Bomnome — paleta oficial (manual de marca) */
+  --color-grafite-noite: #0f1214; /* fundos e placas */
+  --color-grafite: #14181b; /* muros e texto */
+  --color-grafite-muro: #262c30; /* muro sobre fundo escuro */
+  --color-grafite-muted: #5b6167; /* texto secundário sobre claro */
+  --color-papel-muted: #9aa1a7; /* texto secundário sobre escuro */
+  --color-azul-escritura: #27527f; /* sala azul e botão */
+  --color-azul-escritura-forte: #1c3d5f;
+  --color-azul-sinal: #79a2d0; /* só sobre grafite */
+  --color-cinza-papel: #eff0f1; /* ambientes claros */
+  --color-cinza-papel-forte: #e2e4e6;
+
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+
+  --animate-draw: draw 1.1s ease forwards;
+  --animate-float: float 7s ease-in-out infinite;
+
+  @keyframes draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-display);
+  background-color: var(--color-cinza-papel);
+  color: var(--color-grafite);
+  letter-spacing: -0.01em;
+  overscroll-behavior-y: none;
+}
+
+::selection {
+  background: var(--color-azul-escritura);
+  color: var(--color-cinza-papel);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-grafite-muted);
+  border-radius: 999px;
+  border: 2px solid var(--color-cinza-papel);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-azul-sinal);
+  outline-offset: 2px;
+}
+
+.font-mono-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* respiro de "um ambiente" ao redor do símbolo, por regra de marca */
+.brand-clear-space {
+  padding: 0.65em;
+}
+
+.field-select {
+  width: 100%;
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  padding-right: 22px;
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-grafite);
+  cursor: pointer;
+}
+.field-select:focus {
+  outline: none;
 }

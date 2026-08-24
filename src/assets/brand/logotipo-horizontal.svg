@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="120" viewBox="0 0 560 120">
+
+<g transform="translate(0 0) scale(1)">
+  <rect x="0" y="0" width="120" height="120" fill="#14181B"></rect>
+  <rect x="8" y="8" width="55.15" height="39.18" fill="#EFF0F1"></rect>
+  <rect x="71.15" y="8" width="40.85" height="39.18" fill="#EFF0F1"></rect>
+  <rect x="8" y="55.18" width="55.15" height="56.82" fill="#27527F"></rect>
+  <rect x="71.15" y="55.18" width="40.85" height="56.82" fill="#EFF0F1"></rect>
+  <rect x="28.8" y="112" width="36" height="8" fill="#EFF0F1"></rect>
+</g><text x="152" y="62" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="40" font-weight="600" fill="#14181B" letter-spacing="-0.8">TONINHO BOMNOME</text><text x="152" y="88" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="400" fill="#5B6167" letter-spacing="3.4">CORRETOR DE IMÓVEIS</text>
+</svg>

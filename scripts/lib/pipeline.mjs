@@ -118,7 +118,10 @@ export function parsePhotoName(filename) {
 //   # Título do imóvel
 //
 //   ## Tipo
-//   Venda
+//   Casa | Apartamento | Cobertura | Sobrado
+//
+//   ## Negócio
+//   Venda | Aluguel
 //
 //   ## Bairro
 //   Jardim das Acácias
@@ -132,7 +135,13 @@ export function parsePhotoName(filename) {
 //   ## Descrição
 //   Texto livre, pode ter vários parágrafos.
 //
-// Seções extras opcionais: Quartos, Banheiros, Vagas, Área, Comodidades.
+//   ## O que só quem mora perto sabe
+//   Uma informação de bairro que só o corretor saberia.
+//
+// Seções extras opcionais: Status (Disponível/Em negociação, padrão
+// Disponível), Quartos, Banheiros, Vagas, Área, Destaque (Sim/Não).
+const VALID_TYPES = ["Casa", "Apartamento", "Cobertura", "Sobrado"];
+
 export function parseListingMarkdown(raw) {
   const lines = raw.replace(/\r\n/g, "\n").trim().split("\n");
 
@@ -158,31 +167,36 @@ export function parseListingMarkdown(raw) {
   return {
     title,
     tipo: sections.tipo || "",
+    negocio: sections.negocio || "",
+    status: sections.status || "",
     bairro: sections.bairro || "",
     endereco: sections.endereco || "",
     valor: sections.valor || "",
     description,
+    neighborhoodFact: sections["o que so quem mora perto sabe"] || "",
     quartos: sections.quartos || "",
     banheiros: sections.banheiros || "",
     vagas: sections.vagas || "",
     area: sections.area || "",
-    comodidades: sections.comodidades || "",
+    destaque: sections.destaque || "",
   };
 }
 
+function parseInt0(raw) {
+  const n = parseInt(String(raw || "").replace(/[^\d]/g, ""), 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function parseBoolPt(raw) {
+  return /^(sim|s|yes|true|1)$/i.test(String(raw || "").trim());
+}
+
 // Monta o objeto final salvo no Firestore a partir do markdown já parseado.
+// Formato alinhado ao tipo `Property` do frontend (src/types.ts).
 export function buildPropertyFromMarkdown({ id, parsed, gallery }) {
-  const dealType = /alug/i.test(parsed.tipo) ? "Aluguel" : "Venda";
-
-  const specs = [];
-  if (parsed.quartos) specs.push({ label: "Quartos", value: parsed.quartos, icon: "bed" });
-  if (parsed.banheiros) specs.push({ label: "Banheiros", value: parsed.banheiros, icon: "bath" });
-  if (parsed.vagas) specs.push({ label: "Vagas", value: parsed.vagas, icon: "car" });
-  if (parsed.area) specs.push({ label: "Área construída", value: parsed.area, icon: "ruler" });
-
-  const amenities = parsed.comodidades
-    ? parsed.comodidades.split(",").map((s) => s.trim()).filter(Boolean)
-    : [];
+  const type = VALID_TYPES.includes(parsed.tipo) ? parsed.tipo : "Casa";
+  const dealType = /alug/i.test(parsed.negocio) ? "Aluguel" : "Venda";
+  const status = /negocia/i.test(parsed.status) ? "Em negociação" : "Disponível";
 
   // Bairro/cidade/estado aparecem publicamente no site; o endereço completo
   // fica salvo no banco (uso interno/CRM) mas não é exibido na página do
@@ -190,22 +204,29 @@ export function buildPropertyFromMarkdown({ id, parsed, gallery }) {
   // endereço exato antes do contato com o corretor.
   const cityState = parseCityState(parsed.endereco);
 
+  const galleryUrls = gallery.map((g) => g.src);
+
   return {
     id,
+    slug: id,
     title: parsed.title || "Imóvel sem título",
+    type,
     dealType,
+    status,
+    neighborhood: parsed.bairro || "",
+    street: parsed.endereco || "",
+    city: cityState.city,
+    state: cityState.state,
     price: parseMoney(parsed.valor),
-    address: {
-      neighborhood: parsed.bairro || "",
-      street: parsed.endereco || "",
-      city: cityState.city,
-      state: cityState.state,
-    },
+    areaM2: parseInt0(parsed.area),
+    bedrooms: parseInt0(parsed.quartos),
+    bathrooms: parseInt0(parsed.banheiros),
+    parking: parseInt0(parsed.vagas),
+    featured: parseBoolPt(parsed.destaque),
+    neighborhoodFact: parsed.neighborhoodFact || "",
     description: parsed.description,
-    specs,
-    amenities,
-    gallery,
-    coverUrl: gallery[0]?.src || "",
+    cover: galleryUrls[0] || "",
+    gallery: galleryUrls,
     updatedAt: new Date().toISOString(),
   };
 }

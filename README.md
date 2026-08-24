@@ -1,8 +1,9 @@
-# TBN Imóveis — Página de exemplo
+# Toninho Bomnome — Corretor de Imóveis
 
-Site (venda/aluguel de imóveis) em React + Vite, inspirado no layout do
-QuintoAndar, com a identidade visual da TBN Imóveis e do corretor Toninho
-Bomnome. Publicado em produção via Vercel.
+Site (venda/aluguel de imóveis) em React + TypeScript + Tailwind, com a
+identidade visual "Planta aberta" do corretor Toninho Bomnome (CRECI
+247711-F, Botucatu/SP). Publicado em produção via Vercel, em
+[toninho-bomnome.vercel.app](https://toninho-bomnome.vercel.app).
 
 ## Como rodar
 
@@ -24,8 +25,9 @@ Existem dois jeitos, com o **mesmo formato de pasta**:
 
   1. Crie uma pasta dentro de `incoming/` com o nome do imóvel.
   2. Dentro dela, direto (sem subpastas), coloque:
-     - **`imovel.md`** — título + tags (Tipo, Bairro, Endereço, Valor,
-       Descrição...). Modelo completo em `GUIA-CORRETOR.md`.
+     - **`imovel.md`** — título + tags (Tipo, Negócio, Bairro, Endereço,
+       Valor, Descrição, "O que só quem mora perto sabe"...). Modelo
+       completo em `GUIA-CORRETOR.md`.
      - **`capa.jpg`** — a foto de capa.
      - **`1 - Entrada.jpg`, `2 - Sala.jpg`, ...** — fotos numeradas.
   3. Rode:
@@ -58,8 +60,14 @@ runbook de setup (Drive, GitHub Actions, custos) em
 
 ## Estrutura de dados
 
-- `src/data/property.js` — dados fixos do site: agência, corretor,
-  diferenciais, áreas de atuação. Edite manualmente quando precisar.
+O tipo `Property` (`src/types.ts`) é o contrato entre o pipeline de
+ingestão (`scripts/lib/pipeline.mjs`) e o frontend — os dois lados devem
+concordar com esse formato.
+
+- `src/data/agent.ts` — dados fixos do corretor (nome, CRECI, contato,
+  bio). Edite manualmente quando precisar.
+- `src/data/properties.ts` — só funções auxiliares (`getFeaturedProperties`,
+  `getPropertyBySlug`, `getRelatedProperties`), sem dados fixos.
 - `src/data/properties.json` — **fallback local**, usado pelo site só se
   o Firestore estiver inacessível no momento do carregamento. Fica vazio
   (`[]`) por padrão — os imóveis de verdade vivem no Firestore, não
@@ -67,11 +75,15 @@ runbook de setup (Drive, GitHub Actions, custos) em
   `sync-drive.mjs`, rodando no GitHub Actions, não tem como escrever
   neste arquivo do repositório, então ele não reflete imóveis publicados
   só pelo Drive). Não edite à mão.
-- Coleção Firestore `imoveis` — os dados reais dos imóveis publicados,
-  lidos ao vivo pelo site. Coleção `driveSync` — estado interno de
-  sincronização (não usado pelo frontend).
+- `src/hooks/useProperties.ts` — hook que busca os imóveis do Firestore
+  em tempo real (com fallback pro JSON acima).
+- Coleção Firestore `imoveis` — os dados reais dos imóveis publicados.
+  Coleção `driveSync` — estado interno de sincronização (não usado pelo
+  frontend).
 
-A cor do site segue a paleta definida em `src/styles/variables.css`.
+A paleta/tipografia da marca ficam em `src/index.css` (`@theme` do
+Tailwind v4). Os SVGs da marca (logotipo, símbolo) ficam em
+`src/assets/brand/`.
 
 ## Alterando as regras de segurança do Firestore
 
@@ -90,7 +102,7 @@ a CLI do Firebase na hora.)
 
 ```bash
 npm run build
-vercel --prod --yes --project tbn-imoveis
+vercel --prod --yes --project toninho-bomnome
 ```
 
 Só é necessário quando o **código** do site muda — publicar um imóvel
