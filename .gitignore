@@ -18,6 +18,13 @@ incoming/
 # rascunhos/capturas de tela soltas, não são assets do site
 Fotos/
 
+# scripts e capturas de tela avulsos de checagem manual (Playwright etc.)
+pw-*.mjs
+audit-*.png
+chk-*.png
+final-*.png
+*.bak
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
