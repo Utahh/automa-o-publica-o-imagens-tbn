@@ -232,7 +232,9 @@ export function classifyListingFiles(fileNames) {
 
   for (const name of fileNames) {
     const ext = path.extname(name).toLowerCase();
-    const base = path.basename(name, ext);
+    // Sem extensão reconhecida, o nome inteiro é a "base" — cobre o caso de
+    // alguém subir a capa como um arquivo chamado só "Capa", sem .jpg/.png.
+    const base = IMAGE_EXT.includes(ext) ? path.basename(name, ext) : name;
 
     if (name === MD_FILENAME) {
       result.mdFile = name;
@@ -242,12 +244,14 @@ export function classifyListingFiles(fileNames) {
       result.readyFile = name;
       continue;
     }
-    if (!IMAGE_EXT.includes(ext)) {
-      result.ignored.push(name);
-      continue;
-    }
+    // A capa é reconhecida pelo nome, com ou sem extensão de imagem —
+    // checa isso antes de descartar por extensão desconhecida.
     if (base.toLowerCase() === COVER_BASENAME) {
       result.coverFile = name;
+      continue;
+    }
+    if (!IMAGE_EXT.includes(ext)) {
+      result.ignored.push(name);
       continue;
     }
     const { order, label } = parsePhotoName(name);
