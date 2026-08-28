@@ -54,6 +54,8 @@ Você organiza a pasta   Google Drive          GitHub Actions            Firesto
 | **Repositório público** em vez de privado | Repositório privado só tem 2.000 min/mês grátis de Actions — cada execução conta como 1 min (arredondado pra cima), e mesmo o cron original de 15 em 15 min (~2.880 min/mês) já estourava essa cota. Repositório **público** tem Actions **ilimitado e grátis**, o que permite rodar no intervalo mínimo do GitHub (5 min) sem risco de cobrança. Nenhuma credencial fica exposta — Secrets do GitHub são criptografados e nunca aparecem no código nem nos logs, em repositório público ou privado; só o código-fonte do site fica visível, sem nada sigiloso. |
 | **Estado de sync no Firestore**, não no Drive | Evita precisar dar permissão de **escrita** ao service account no seu Drive. Ele só precisa ser "Leitor" da pasta — mais seguro, e mais simples de configurar. |
 | **`PRONTO.txt` como marcador** | Sem isso, o robô podia publicar um imóvel pela metade enquanto as fotos ainda estão subindo (Drive sincroniza arquivo por arquivo). |
+| **Detecção de duplicidade (`findDuplicate`)** | A pasta raiz do Drive é compartilhada com mais de uma pessoa (Cauan + corretor) — as duas com permissão de criar pastas novas. Sem uma trava, duas pastas para o mesmo imóvel (mesmo slug ou mesmo título) publicariam como dois imóveis separados. O robô agora recusa publicar e avisa no log quando detecta isso, em vez de sobrescrever ou duplicar silenciosamente. O combinado principal continua sendo de processo: só o Cauan cria pastas novas (ver `GUIA-CORRETOR.md`). |
+| **Agendamento via cron-job.org, não só o `schedule` do GitHub Actions** | O gatilho `schedule` nativo do GitHub é "melhor esforço" e atrasa bastante agendamentos curtos (a cada 5 min) em repositórios de baixo tráfego — na prática rodava a cada poucas horas, não a cada 5 min. Um cron externo grátis (cron-job.org) chama a API do GitHub (`workflow_dispatch`) a cada 5 min de verdade, contornando esse atraso. O `schedule` do workflow continua no ar como reforço/fallback. |
 | **Endereço completo salvo mas não exibido publicamente** | Prática comum no mercado imobiliário: evita visitas "espontâneas" sem o corretor. Fácil de reverter (ver abaixo). |
 | **`cover` separado + `gallery[0]` = mesma foto** | O pipeline sempre inclui a capa como primeiro item de `gallery` também, então tanto um campo `cover` dedicado quanto o índice `[0]` da galeria mostram a mesma foto — qualquer um dos dois funciona pra exibir a capa. |
 
@@ -155,9 +157,39 @@ Na aba **Actions** do repositório, escolha o workflow
 manualmente. Acompanhe o log — ele mostra pasta por pasta o que foi
 publicado, ignorado ou está aguardando o `PRONTO.txt`.
 
-Depois disso, o cron (`*/5 * * * *`) assume sozinho.
+Depois disso, o cron (`*/5 * * * *`) assume sozinho — **na prática, com
+um adendo**: o gatilho `schedule` nativo do GitHub atrasa bastante
+agendamentos curtos (rodava a cada poucas horas, não a cada 5 min, em
+testes reais). Por isso existe o passo 8 abaixo.
 
-### 8. Vercel
+### 8. Cron externo (cron-job.org) — dispara de verdade a cada 5 min
+
+1. Crie uma conta grátis em [cron-job.org](https://cron-job.org/en/signUp/)
+   (sem cartão) e confirme o e-mail.
+2. Gere um token do GitHub em
+   [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new):
+   **Repository access** → só o repositório deste projeto; **Permissions**
+   → **Actions** → **Read and write**.
+3. Em [console.cron-job.org](https://console.cron-job.org) → seu usuário
+   → **Settings** → aba **API** → ative e copie a chave.
+4. Crie o cronjob via API (`PUT https://api.cron-job.org/jobs`, header
+   `Authorization: Bearer <chave da API>`) apontando pra:
+
+   ```
+   POST https://api.github.com/repos/<usuario>/<repo>/actions/workflows/sync-drive.yml/dispatches
+   Headers: Authorization: Bearer <token do GitHub>, Accept: application/vnd.github+json
+   Body: {"ref":"main"}
+   Agendamento: a cada 5 minutos
+   ```
+
+   (ou crie direto pela interface do console.cron-job.org, sem precisar
+   da API — o resultado final é o mesmo.)
+
+Isso é totalmente independente do cron nativo do GitHub Actions — os dois
+ficam ativos ao mesmo tempo, sem conflito (o `sync-drive.mjs` é idempotente:
+rodar de novo sem nada ter mudado só imprime "sem mudanças").
+
+### 9. Vercel
 
 O deploy do site continua manual, só quando o **código** muda:
 

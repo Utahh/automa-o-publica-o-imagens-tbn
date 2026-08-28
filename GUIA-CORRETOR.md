@@ -9,6 +9,15 @@ até ~5-10 minutos, o imóvel aparece sozinho no site.
 Dentro da pasta do Drive combinada com você (ex: **"TBN Imóveis — Envio"**),
 crie **uma pasta por imóvel**, com o nome que quiser (ex: `Casa Rua das Flores`).
 
+⚠️ **Quem cria a pasta nova de cada imóvel é sempre o Cauan.** Como mais de
+uma pessoa tem acesso a essa pasta compartilhada, se os dois criarem uma
+pasta pro mesmo imóvel (com nomes parecidos ou não), o robô publica os dois
+como imóveis separados — duplicado no site. Se o corretor receber acesso a
+uma pasta já criada, ele só adiciona/edita arquivos **dentro dela**, nunca
+cria uma pasta nova por conta própria. (O robô também tem uma trava técnica
+pra isso — se detectar duas pastas diferentes gerando o mesmo imóvel, ele
+recusa publicar e avisa no log — mas o combinado evita o problema de raiz.)
+
 ## 2. O que colocar dentro da pasta do imóvel
 
 Tudo direto dentro da pasta — sem subpastas:

@@ -335,3 +335,45 @@ export async function upsertProperty(property) {
   const db = firestore();
   await db.collection(FIRESTORE_COLLECTION).doc(property.id).set(property);
 }
+
+// ─── Detecção de duplicidade ────────────────────────────────────────────────
+// Duas pessoas com acesso à mesma pasta do Drive podem criar, sem saber uma
+// da outra, uma pasta nova para o mesmo imóvel. Antes de publicar, verifica
+// se já existe uma pasta DIFERENTE do Drive publicando com o mesmo id (nomes
+// muito parecidos geram o mesmo slug) ou com o mesmo título — nesses casos
+// é melhor parar e avisar do que sobrescrever silenciosamente.
+export async function findDuplicate({ id, title, sourceFolderId }) {
+  const db = firestore();
+
+  // Mesmo id (slug), pasta diferente do Drive → provável duplicata exata.
+  const syncSnap = await db
+    .collection("driveSync")
+    .where("propertyId", "==", id)
+    .get();
+  for (const doc of syncSnap.docs) {
+    if (doc.id !== sourceFolderId) {
+      return {
+        type: "id",
+        message: `já existe uma pasta diferente do Drive publicando como "${id}" (doc driveSync: ${doc.id})`,
+      };
+    }
+  }
+
+  // Mesmo título, id diferente → provável duplicata com nomes de pasta diferentes.
+  if (title) {
+    const titleSnap = await db
+      .collection(FIRESTORE_COLLECTION)
+      .where("title", "==", title)
+      .get();
+    for (const doc of titleSnap.docs) {
+      if (doc.id !== id) {
+        return {
+          type: "title",
+          message: `já existe um imóvel publicado com o mesmo título ("${title}"), em uma pasta com nome diferente (id: ${doc.id})`,
+        };
+      }
+    }
+  }
+
+  return null;
+}

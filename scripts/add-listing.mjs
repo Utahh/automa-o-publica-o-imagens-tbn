@@ -35,6 +35,7 @@ import {
   classifyListingFiles,
   processPhoto,
   upsertProperty,
+  findDuplicate,
   slugify,
   makeTempDir,
   cleanupTempDir,
@@ -101,6 +102,13 @@ async function processListing(folderName) {
   }
 
   const id = slugify(folderName);
+
+  const duplicate = await findDuplicate({ id, title: parsed.title, sourceFolderId: `local:${folderName}` });
+  if (duplicate) {
+    console.log(`✗ ${folderName}: possível duplicidade — ${duplicate.message}. Pulando.`);
+    return null;
+  }
+
   const tmpDir = makeTempDir(`tbn-listing-${id}-`);
 
   try {

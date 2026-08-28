@@ -27,6 +27,7 @@ import {
   classifyListingFiles,
   processPhoto,
   upsertProperty,
+  findDuplicate,
   slugify,
   makeTempDir,
   cleanupTempDir,
@@ -161,6 +162,14 @@ async function processDriveFolder(drive, folder) {
   }
 
   const id = slugify(folder.name);
+
+  const duplicate = await findDuplicate({ id, title: parsed.title, sourceFolderId: folder.id });
+  if (duplicate) {
+    console.log(`🚫 ${folder.name}: possível duplicidade — ${duplicate.message}. Publicação cancelada.`);
+    console.log(`   Renomeie uma das duas pastas no Drive (ou apague a que não deve existir) e rode de novo.`);
+    return;
+  }
+
   const tmpDir = makeTempDir(`tbn-drive-${id}-`);
 
   try {
