@@ -6,17 +6,26 @@ até ~5-10 minutos, o imóvel aparece sozinho no site.
 
 ## 1. Onde subir
 
-Dentro da pasta do Drive combinada com você (ex: **"TBN Imóveis — Envio"**),
-crie **uma pasta por imóvel**, com o nome que quiser (ex: `Casa Rua das Flores`).
+Existem **duas pastas no Drive**, e o robô lê as duas:
 
-⚠️ **Quem cria a pasta nova de cada imóvel é sempre o Cauan.** Como mais de
-uma pessoa tem acesso a essa pasta compartilhada, se os dois criarem uma
-pasta pro mesmo imóvel (com nomes parecidos ou não), o robô publica os dois
-como imóveis separados — duplicado no site. Se o corretor receber acesso a
-uma pasta já criada, ele só adiciona/edita arquivos **dentro dela**, nunca
-cria uma pasta nova por conta própria. (O robô também tem uma trava técnica
-pra isso — se detectar duas pastas diferentes gerando o mesmo imóvel, ele
-recusa publicar e avisa no log — mas o combinado evita o problema de raiz.)
+- **"Envio"** — onde o **Cauan** organiza os imóveis que ele mesmo prepara.
+- **"Casas - Site"** — onde o **corretor** cria os imóveis que ele mesmo
+  organiza, direto, sem precisar passar pela "Envio".
+
+Cada pessoa cria a pasta do imóvel **na sua própria pasta**:
+Cauan sempre em "Envio", o corretor sempre em "Casas - Site". Dentro de
+cada uma, **uma pasta por imóvel**, com o nome que quiser (ex:
+`Casa Rua das Flores`).
+
+⚠️ **Nunca crie uma pasta na pasta da outra pessoa.** O robô lê as duas e
+publica dos dois lugares igual — não existe cópia nem sincronização entre
+elas, são só duas gavetas diferentes pro mesmo armário. Se as duas pessoas
+criarem uma pasta pro mesmo imóvel (mesmo nome ou não), o robô publicaria
+os dois como imóveis separados — duplicado no site. Por isso: **Cauan só
+mexe em "Envio", corretor só mexe em "Casas - Site"**. (O robô também tem
+uma trava técnica pra isso — se detectar as duas pastas gerando o mesmo
+imóvel, ele recusa publicar e avisa no log — mas o combinado evita o
+problema de raiz.)
 
 ## 2. O que colocar dentro da pasta do imóvel
 

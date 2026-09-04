@@ -1,20 +1,25 @@
 // Sincroniza imóveis do Google Drive para o Firebase. Roda sozinho via
-// GitHub Actions (.github/workflows/sync-drive.yml) a cada ~15 minutos.
+// GitHub Actions (a cada 5 min de verdade, via cron-job.org — ver
+// docs/ARQUITETURA.md, o `schedule` nativo do GitHub atrasa demais).
 //
-// Estrutura esperada no Drive — ver GUIA-CORRETOR.md:
+// Duas pastas no Drive são lidas em pé de igualdade — ver GUIA-CORRETOR.md:
 //
-//   <pasta raiz compartilhada com o service account, como Leitor>
-//     Casa Rua das Flores/         <- uma pasta por imóvel
-//       imovel.md                   <- título + tags (Bairro, Endereço, Valor, Descrição...)
-//       capa.jpg                    <- foto de capa
-//       1 - Entrada.jpg
-//       2 - Sala de estar.jpg
-//       PRONTO.txt                  <- arquivo vazio: sinaliza "pode publicar"
+//   "Envio" (DRIVE_ENVIO_FOLDER_ID, admin organiza aqui)
+//   "Casas - Site" (DRIVE_FOLDER_ID, corretor também cria pasta aqui direto)
 //
-// Uma pasta só é (re)processada quando tem PRONTO.txt e quando algum
-// arquivo dentro dela foi modificado depois da última publicação. O estado
-// de "já publicado" fica salvo no Firestore (coleção driveSync), não no
-// Drive — assim o service account só precisa de acesso de leitura.
+// O robô procura pastas de imóvel nas DUAS e publica dali mesmo — não
+// copia nada de uma pra outra. (Tentamos copiar via service account, mas
+// o Google bloqueia: "Service Accounts do not have storage quota" — só
+// funciona em Shared Drives do Workspace, que é pago. Ler as duas
+// diretamente resolve o mesmo problema sem esse custo.)
+//
+// Uma pasta só é (re)processada quando tem PRONTO.txt e algo dentro dela
+// mudou desde a última publicação — estado em Firestore (coleção
+// driveSync), não no Drive, então o service account só precisa de acesso
+// de LEITURA nas duas pastas.
+//
+// findDuplicate() (scripts/lib/pipeline.mjs) é quem evita que a mesma
+// pasta criada nas duas pastas-fonte publique como dois imóveis.
 import { GoogleAuth } from "google-auth-library";
 import { readFileSync, existsSync } from "fs";
 
@@ -44,6 +49,7 @@ try {
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const SYNC_STATE_COLLECTION = "driveSync";
+const FOLDER_MIME = "application/vnd.google-apps.folder";
 
 function loadServiceAccount() {
   if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
@@ -58,10 +64,16 @@ function loadServiceAccount() {
   );
 }
 
-function getRootFolderId() {
-  const id = process.env.DRIVE_FOLDER_ID;
-  if (!id) throw new Error("Defina a variável de ambiente DRIVE_FOLDER_ID com o ID da pasta raiz do Drive.");
-  return id;
+// Duas pastas-fonte, lidas em pé de igualdade. DRIVE_ENVIO_FOLDER_ID é
+// opcional — sem ela, o robô só lê DRIVE_FOLDER_ID.
+function getSourceFolders() {
+  const sources = [];
+  if (process.env.DRIVE_FOLDER_ID) sources.push({ label: "Casas - Site", id: process.env.DRIVE_FOLDER_ID });
+  if (process.env.DRIVE_ENVIO_FOLDER_ID) sources.push({ label: "Envio", id: process.env.DRIVE_ENVIO_FOLDER_ID });
+  if (sources.length === 0) {
+    throw new Error("Defina DRIVE_FOLDER_ID (e opcionalmente DRIVE_ENVIO_FOLDER_ID) com o(s) ID(s) da(s) pasta(s) do Drive.");
+  }
+  return sources;
 }
 
 // ─── Cliente Drive (REST, sem depender do pacote googleapis inteiro) ───────
@@ -102,8 +114,6 @@ class DriveClient {
   }
 }
 
-const FOLDER_MIME = "application/vnd.google-apps.folder";
-
 async function getSyncState(folderId) {
   const snap = await firestore().collection(SYNC_STATE_COLLECTION).doc(folderId).get();
   return snap.exists ? snap.data() : null;
@@ -115,6 +125,10 @@ async function saveSyncState(folderId, { propertyId, latestModified }) {
     latestModified,
     publishedAt: new Date().toISOString(),
   });
+}
+
+function computeLatestModified(fileChildren) {
+  return fileChildren.reduce((max, f) => Math.max(max, new Date(f.modifiedTime).getTime()), 0);
 }
 
 async function processDriveFolder(drive, folder) {
@@ -135,10 +149,7 @@ async function processDriveFolder(drive, folder) {
     return;
   }
 
-  const latestModified = fileChildren.reduce(
-    (max, f) => Math.max(max, new Date(f.modifiedTime).getTime()),
-    0
-  );
+  const latestModified = computeLatestModified(fileChildren);
 
   const state = await getSyncState(folder.id);
   if (state && state.latestModified >= latestModified) {
@@ -219,7 +230,7 @@ async function processDriveFolder(drive, folder) {
 
 async function main() {
   const serviceAccount = loadServiceAccount();
-  const rootFolderId = getRootFolderId();
+  const sources = getSourceFolders();
 
   initFirebase(serviceAccount);
   initCloudinary();
@@ -230,25 +241,27 @@ async function main() {
   });
   const drive = new DriveClient(auth);
 
-  console.log(`Lendo pasta raiz do Drive (${rootFolderId})...`);
-  const children = await drive.listChildren(rootFolderId);
-  const folders = children.filter((f) => f.mimeType === FOLDER_MIME);
+  for (const source of sources) {
+    console.log(`\n=== Lendo pasta "${source.label}" (${source.id}) ===`);
+    const children = await drive.listChildren(source.id);
+    const folders = children.filter((f) => f.mimeType === FOLDER_MIME);
 
-  if (folders.length === 0) {
-    console.log("Nenhuma pasta de imóvel encontrada na pasta raiz do Drive.");
-    return;
-  }
-
-  console.log(`Encontradas ${folders.length} pasta(s) de imóvel.\n`);
-
-  for (const folder of folders) {
-    console.log(`📁 ${folder.name}`);
-    try {
-      await processDriveFolder(drive, folder);
-    } catch (err) {
-      console.error(`✗ ${folder.name}: erro inesperado — ${err.message || err}`);
+    if (folders.length === 0) {
+      console.log(`Nenhuma pasta de imóvel encontrada em "${source.label}".`);
+      continue;
     }
-    console.log("");
+
+    console.log(`Encontradas ${folders.length} pasta(s) de imóvel.\n`);
+
+    for (const folder of folders) {
+      console.log(`📁 ${folder.name}`);
+      try {
+        await processDriveFolder(drive, folder);
+      } catch (err) {
+        console.error(`✗ ${folder.name}: erro inesperado — ${err.message || err}`);
+      }
+      console.log("");
+    }
   }
 
   console.log("✅ Sincronização concluída.");

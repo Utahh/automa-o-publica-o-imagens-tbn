@@ -8,19 +8,31 @@ dia é só o `GUIA-CORRETOR.md`.
 ## Visão geral
 
 ```
-Você organiza a pasta   Google Drive          GitHub Actions            Firestore (dados)        Vercel
-   do imóvel        ──▶  (arquivos)   ──▶   (roda a cada 5min)  ──▶    Cloudinary (fotos)  ──▶  Site (React)
- (imovel.md, capa,        │                  scripts/sync-drive.mjs                                lê os dados
-  fotos, PRONTO.txt)      │                                                                         ao vivo
-                          └── continua sendo SEU Drive, o robô só lê (permissão de Leitor)
+ Cauan organiza em    Corretor organiza em
+   "Envio"              "Casas - Site"          GitHub Actions        Firestore (dados)      Vercel
+ (DRIVE_ENVIO_          (DRIVE_FOLDER_ID)    ──▶ (roda a cada 5min) ─▶ Cloudinary (fotos) ──▶ Site (React)
+  FOLDER_ID)                  │                  scripts/sync-drive.mjs                       lê os dados
+        │                     │                                                               ao vivo
+        └── as duas continuam sendo Drives normais (uma de cada dono) — o robô só LÊ as
+            duas (permissão de Leitor), sem copiar nada de uma pra outra
 ```
 
-- **Ingestão**: você (ou futuramente o corretor) organiza uma pasta por
-  imóvel no Google Drive, seguindo o contrato descrito em
-  `GUIA-CORRETOR.md`.
+- **Ingestão**: duas pastas de origem, cada uma com seu próprio dono —
+  **"Envio"** (Cauan organiza aqui) e **"Casas - Site"** (o corretor cria
+  os imóveis dele aqui, direto). O robô lê as duas e publica de onde
+  encontrar uma pasta pronta — não existe cópia nem sincronização entre
+  elas. Ver o contrato de pastas/arquivos em `GUIA-CORRETOR.md`.
+  - **Por que não copiar de uma pra outra**: tentamos (pasta única "Envio",
+    corretor só recebia acesso de editor nela) e depois um espelhamento
+    automático (copiar de "Envio" pra "Casas - Site"). A cópia via
+    service account esbarra num limite real do Google: *"Service Accounts
+    do not have storage quota"* — service accounts não conseguem ser
+    donos de arquivo novo num Drive pessoal comum (só funciona em Shared
+    Drives do Google Workspace, que é pago). Ler as duas pastas
+    diretamente contorna isso sem custo nenhum.
 - **Automação**: um workflow do GitHub Actions (`.github/workflows/sync-drive.yml`)
-  roda `scripts/sync-drive.mjs` a cada ~5 minutos (ou sob demanda, pelo
-  botão "Run workflow"). Ele lê a pasta raiz do Drive, encontra pastas com
+  roda `scripts/sync-drive.mjs` a cada ~5 minutos (via cron-job.org — ver
+  abaixo). Ele lê as duas pastas de origem, encontra pastas com
   `PRONTO.txt`, converte as fotos para `.webp` (mais leve), sobe pro
   **Cloudinary** e grava os dados no **Firestore**.
 - **Por que Cloudinary e não Firebase Storage**: desde fevereiro de 2026 o
@@ -54,7 +66,8 @@ Você organiza a pasta   Google Drive          GitHub Actions            Firesto
 | **Repositório público** em vez de privado | Repositório privado só tem 2.000 min/mês grátis de Actions — cada execução conta como 1 min (arredondado pra cima), e mesmo o cron original de 15 em 15 min (~2.880 min/mês) já estourava essa cota. Repositório **público** tem Actions **ilimitado e grátis**, o que permite rodar no intervalo mínimo do GitHub (5 min) sem risco de cobrança. Nenhuma credencial fica exposta — Secrets do GitHub são criptografados e nunca aparecem no código nem nos logs, em repositório público ou privado; só o código-fonte do site fica visível, sem nada sigiloso. |
 | **Estado de sync no Firestore**, não no Drive | Evita precisar dar permissão de **escrita** ao service account no seu Drive. Ele só precisa ser "Leitor" da pasta — mais seguro, e mais simples de configurar. |
 | **`PRONTO.txt` como marcador** | Sem isso, o robô podia publicar um imóvel pela metade enquanto as fotos ainda estão subindo (Drive sincroniza arquivo por arquivo). |
-| **Detecção de duplicidade (`findDuplicate`)** | A pasta raiz do Drive é compartilhada com mais de uma pessoa (Cauan + corretor) — as duas com permissão de criar pastas novas. Sem uma trava, duas pastas para o mesmo imóvel (mesmo slug ou mesmo título) publicariam como dois imóveis separados. O robô agora recusa publicar e avisa no log quando detecta isso, em vez de sobrescrever ou duplicar silenciosamente. O combinado principal continua sendo de processo: só o Cauan cria pastas novas (ver `GUIA-CORRETOR.md`). |
+| **Duas pastas de origem (Envio + Casas - Site), cada uma com seu dono** | Cauan e o corretor têm o próprio espaço pra organizar, sem precisar de acesso de editor na pasta um do outro — evita o problema original (cota de compartilhamento de conta nova do Google) e deixa cada um responsável só pelo que cria. |
+| **Detecção de duplicidade (`findDuplicate`)** | Mesmo com pastas separadas, nada impede as duas pessoas criarem uma pasta pro mesmo imóvel (mesmo nome ou não) sem saber uma da outra. Sem uma trava, isso publicaria como dois imóveis separados. O robô agora recusa publicar e avisa no log quando detecta duas pastas (em qualquer uma das duas origens) gerando o mesmo slug ou o mesmo título. O combinado de processo continua sendo a primeira linha de defesa: cada um só cria pasta na própria pasta (ver `GUIA-CORRETOR.md`). |
 | **Agendamento via cron-job.org, não só o `schedule` do GitHub Actions** | O gatilho `schedule` nativo do GitHub é "melhor esforço" e atrasa bastante agendamentos curtos (a cada 5 min) em repositórios de baixo tráfego — na prática rodava a cada poucas horas, não a cada 5 min. Um cron externo grátis (cron-job.org) chama a API do GitHub (`workflow_dispatch`) a cada 5 min de verdade, contornando esse atraso. O `schedule` do workflow continua no ar como reforço/fallback. |
 | **Endereço completo salvo mas não exibido publicamente** | Prática comum no mercado imobiliário: evita visitas "espontâneas" sem o corretor. Fácil de reverter (ver abaixo). |
 | **`cover` separado + `gallery[0]` = mesma foto** | O pipeline sempre inclui a capa como primeiro item de `gallery` também, então tanto um campo `cover` dedicado quanto o índice `[0]` da galeria mostram a mesma foto — qualquer um dos dois funciona pra exibir a capa. |
@@ -97,12 +110,16 @@ Isso é feito **uma única vez**. Depois disso, o dia a dia é só seguir o
 4. Rode `npm run add-listing` (com a pasta `incoming/imovel-teste/` já
    preparada) para validar que o upload funciona antes de mexer no Drive.
 
-### 2. Google Drive — pasta de envio
+### 2. Google Drive — as duas pastas de origem
 
-1. Crie uma pasta no seu Google Drive, ex: **"TBN Imóveis — Envio"**.
-2. Abra a pasta, copie o **ID dela** da URL:
+1. Crie **duas pastas**, uma em cada conta:
+   - **"Envio"**, no seu Drive pessoal (Cauan organiza aqui).
+   - **"Casas - Site"**, no Drive do corretor (ele organiza aqui, sem
+     precisar de acesso à sua pasta).
+2. Abra cada uma, copie o **ID** de cada URL:
    `https://drive.google.com/drive/folders/`**`ESTE-PEDAÇO-AQUI-É-O-ID`**
-3. Guarde esse ID — vai virar a variável `DRIVE_FOLDER_ID` no GitHub (passo 5).
+3. Guarde os dois IDs — viram as variáveis `DRIVE_ENVIO_FOLDER_ID`
+   ("Envio") e `DRIVE_FOLDER_ID` ("Casas - Site") no GitHub (passo 6).
 
 ### 3. Habilitar a API do Google Drive no mesmo projeto do Firebase
 
@@ -113,20 +130,21 @@ O service account que já existe (`service-account.json`, projeto
    com o mesmo projeto `tbn-imoveis-site` selecionado.
 2. Clique em **"Ativar"** na API do Google Drive.
 
-### 4. Compartilhar a pasta do Drive com o service account
+### 4. Compartilhar as duas pastas do Drive com o service account
 
 1. Abra `service-account.json` e copie o valor do campo `"client_email"`
    (algo como `firebase-adminsdk-xxxxx@tbn-imoveis-site.iam.gserviceaccount.com`).
-2. No Google Drive, clique com o botão direito na pasta **"TBN Imóveis — Envio"**
-   → **Compartilhar** → cole esse e-mail → permissão **Leitor** → Enviar.
+2. No Google Drive, em **cada uma** das duas pastas ("Envio" e
+   "Casas - Site"), clique com o botão direito → **Compartilhar** → cole
+   esse e-mail → permissão **Leitor** → Enviar. (Só leitura mesmo — o
+   robô nunca escreve no Drive, só lê e publica no Firestore/Cloudinary.)
 
 ### 5. Criar o repositório no GitHub e subir o código
 
 O projeto já tem um repositório Git local (criado durante esta sessão,
 com 2 commits). Falta só o repositório remoto:
 
-Crie um repositório **privado** no GitHub (ex: `tbn-imoveis-site`) e
-depois:
+Crie um repositório no GitHub (ex: `tbn-imoveis-site`) e depois:
 
 ```bash
 git remote add origin https://github.com/SEU-USUARIO/tbn-imoveis-site.git
@@ -147,8 +165,9 @@ No repositório, vá em **Settings → Secrets and variables → Actions**:
     arquivo `service-account.json`
   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
     → os mesmos valores do passo 1
-- Aba **Variables** → **New repository variable**:
-  - `DRIVE_FOLDER_ID` → o ID copiado no passo 2
+- Aba **Variables** → **New repository variable**, crie estas 2:
+  - `DRIVE_FOLDER_ID` → ID da pasta **"Casas - Site"** (passo 2)
+  - `DRIVE_ENVIO_FOLDER_ID` → ID da pasta **"Envio"** (passo 2)
 
 ### 7. Testar
 
