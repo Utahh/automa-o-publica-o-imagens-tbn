@@ -1,8 +1,9 @@
-// Inicialização do Firebase (leitura de dados no frontend).
+// Inicialização do Firebase (leitura de dados + autenticação no frontend).
 // Fotos ficam no Cloudinary (URLs públicas salvas direto no Firestore),
 // não no Firebase Storage — por isso não há SDK de Storage aqui.
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   projectId: "tbn-imoveis-site",
@@ -15,3 +16,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
+export const auth = getAuth(app);

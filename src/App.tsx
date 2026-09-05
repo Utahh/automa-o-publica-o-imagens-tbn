@@ -6,10 +6,15 @@ import { Footer } from "./components/Footer";
 import { MobileTabBar } from "./components/MobileTabBar";
 import { WhatsAppButton } from "./components/WhatsAppButton";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { RequireAdmin } from "./components/RequireAdmin";
 import { Home } from "./pages/Home";
 import { Imoveis } from "./pages/Imoveis";
 import { PropertyDetail } from "./pages/PropertyDetail";
 import { NotFound } from "./pages/NotFound";
+import { Login } from "./pages/admin/Login";
+import { AdminLayout } from "./pages/admin/AdminLayout";
+import { Dashboard } from "./pages/admin/Dashboard";
+import { PropertyForm } from "./pages/admin/PropertyForm";
 
 function PageFade({ children }: { children: ReactNode }) {
   return (
@@ -24,7 +29,7 @@ function PageFade({ children }: { children: ReactNode }) {
   );
 }
 
-function App() {
+function PublicSite() {
   const location = useLocation();
   const isHome = location.pathname === "/";
 
@@ -48,6 +53,27 @@ function App() {
       <MobileTabBar />
       <WhatsAppButton variant="floating" />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/admin/login" element={<Login />} />
+      <Route
+        path="/admin"
+        element={
+          <RequireAdmin>
+            <AdminLayout />
+          </RequireAdmin>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="imoveis/novo" element={<PropertyForm />} />
+        <Route path="imoveis/:id" element={<PropertyForm />} />
+      </Route>
+      <Route path="/*" element={<PublicSite />} />
+    </Routes>
   );
 }
 

@@ -1,10 +1,18 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Imóveis: leitura pública, escrita apenas via Admin SDK (script)
+    // Imóveis: leitura pública só do que está publicado; rascunhos só
+    // ficam visíveis pra quem está logado no painel (Cauan/Toninho).
+    // Escrita continua só via Admin SDK (funções serverless em api/).
     match /imoveis/{docId} {
-      allow read: if true;
+      allow read: if resource.data.published == true || request.auth != null;
       allow write: if false;
+    }
+
+    // Contador do código sequencial do imóvel (TB-0001, TB-0002...) — só
+    // lido/escrito pelo Admin SDK, nunca pelo cliente.
+    match /_meta/{docId} {
+      allow read, write: if false;
     }
   }
 }

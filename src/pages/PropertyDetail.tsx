@@ -61,6 +61,7 @@ export function PropertyDetail() {
                   <p className="mt-1.5 font-display text-[15px] text-grafite-muted">
                     {property.neighborhood}, {property.city} · {property.state}
                   </p>
+                  <p className="mt-1 font-mono text-[11px] text-grafite-muted/70">Código {property.code}</p>
                 </div>
                 <p className="font-mono-tabular font-mono text-2xl font-semibold text-azul-escritura sm:text-3xl">
                   {formatPrice(property.price, property.dealType)}
@@ -76,6 +77,17 @@ export function PropertyDetail() {
                   </p>
                 ))}
               </div>
+
+              {property.video && (
+                <div className="mt-8">
+                  <h2 className="font-display text-lg font-semibold text-grafite">Vídeo do imóvel</h2>
+                  <video
+                    src={property.video}
+                    controls
+                    className="mt-3 aspect-video w-full rounded-2xl bg-grafite"
+                  />
+                </div>
+              )}
             </Reveal>
           </div>
 

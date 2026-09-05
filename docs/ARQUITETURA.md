@@ -2,253 +2,184 @@
 
 Este documento explica **como o sistema funciona por trás**, as decisões
 tomadas e **o passo a passo de setup** que só você consegue fazer (contas
-Google/Cloudinary/GitHub/Vercel). Depois de configurado uma vez, o dia a
-dia é só o `GUIA-CORRETOR.md`.
+Firebase/Cloudinary/Vercel). Depois de configurado uma vez, o dia a dia é
+só o `GUIA-CORRETOR.md`.
+
+> **Nota histórica**: até setembro de 2026, o cadastro era feito
+> organizando pastas no Google Drive, lidas por um robô (GitHub Actions)
+> a cada 5 minutos. Esse fluxo foi **desativado e removido** — sem tela,
+> sem validação amigável, sem jeito de editar "Destaque" sem reprocessar
+> tudo. Se precisar consultar como funcionava, o código e os docs
+> antigos continuam no histórico do Git (`git log --all -- scripts/sync-drive.mjs`).
 
 ## Visão geral
 
 ```
- Cauan organiza em    Corretor organiza em
-   "Envio"              "Casas - Site"          GitHub Actions        Firestore (dados)      Vercel
- (DRIVE_ENVIO_          (DRIVE_FOLDER_ID)    ──▶ (roda a cada 5min) ─▶ Cloudinary (fotos) ──▶ Site (React)
-  FOLDER_ID)                  │                  scripts/sync-drive.mjs                       lê os dados
-        │                     │                                                               ao vivo
-        └── as duas continuam sendo Drives normais (uma de cada dono) — o robô só LÊ as
-            duas (permissão de Leitor), sem copiar nada de uma pra outra
+ Navegador (painel /admin)
+   │
+   ├─ upload de foto/vídeo ──────────────▶ Cloudinary (unsigned upload preset)
+   │                                        já devolve a URL otimizada
+   │
+   └─ criar/editar/excluir imóvel ───────▶ Vercel Functions (api/properties/*)
+                                             confere o login (Firebase Auth)
+                                             grava no Firestore (Admin SDK)
+                                                   │
+                                                   ▼
+                                             Firestore (dados dos imóveis)
+                                                   │
+                                                   ▼
+                                             Site (React) lê ao vivo
 ```
 
-- **Ingestão**: duas pastas de origem, cada uma com seu próprio dono —
-  **"Envio"** (Cauan organiza aqui) e **"Casas - Site"** (o corretor cria
-  os imóveis dele aqui, direto). O robô lê as duas e publica de onde
-  encontrar uma pasta pronta — não existe cópia nem sincronização entre
-  elas. Ver o contrato de pastas/arquivos em `GUIA-CORRETOR.md`.
-  - **Por que não copiar de uma pra outra**: tentamos (pasta única "Envio",
-    corretor só recebia acesso de editor nela) e depois um espelhamento
-    automático (copiar de "Envio" pra "Casas - Site"). A cópia via
-    service account esbarra num limite real do Google: *"Service Accounts
-    do not have storage quota"* — service accounts não conseguem ser
-    donos de arquivo novo num Drive pessoal comum (só funciona em Shared
-    Drives do Google Workspace, que é pago). Ler as duas pastas
-    diretamente contorna isso sem custo nenhum.
-- **Automação**: um workflow do GitHub Actions (`.github/workflows/sync-drive.yml`)
-  roda `scripts/sync-drive.mjs` a cada ~5 minutos (via cron-job.org — ver
-  abaixo). Ele lê as duas pastas de origem, encontra pastas com
-  `PRONTO.txt`, converte as fotos para `.webp` (mais leve), sobe pro
-  **Cloudinary** e grava os dados no **Firestore**.
-- **Por que Cloudinary e não Firebase Storage**: desde fevereiro de 2026 o
-  Google exige o plano pago Blaze (cartão cadastrado) para usar Cloud
-  Storage em qualquer projeto Firebase, mesmo ficando dentro da cota
-  grátis. O Firestore (banco de dados) **não** foi afetado — só o Storage.
-  O Cloudinary tem plano grátis de verdade (sem cartão) e já faz otimização
-  de imagem, então assumiu o lugar do Storage sem custo.
-- **Estado de sincronização**: para saber o que já foi publicado (e
-  suportar edições depois), o robô guarda no Firestore (coleção
-  `driveSync`) a data de modificação mais recente de cada pasta já
-  processada. Isso evita reprocessar tudo a cada execução e permite que o
-  service account do Drive tenha **só permissão de leitura** — ele nunca
-  precisa escrever nada no seu Drive.
-- **Site**: o frontend (`src/`) já lia os imóveis **ao vivo** do Firestore
-  (`src/data/property.js` → `useProperties()`), então **não precisa fazer
-  novo deploy no Vercel a cada imóvel publicado** — só quando o código do
-  site muda. As fotos são servidas direto do CDN do Cloudinary (URLs
-  salvas no próprio documento do Firestore).
-- **Fallback local**: `npm run add-listing` continua existindo para você
-  testar uma pasta localmente (formato idêntico ao do Drive, dentro de
-  `incoming/`) antes de subir pro Drive de verdade.
+- **Autenticação**: Firebase Auth (e-mail/senha), só duas contas — Cauan
+  e o corretor Toninho. É o mesmo Firebase que já hospeda o Firestore,
+  sem custo adicional.
+- **Escrita**: as regras do Firestore negam escrita de **qualquer**
+  cliente (`allow write: if false` em `firestore.rules`) — só o Admin
+  SDK grava, e só as funções em `api/properties/` usam o Admin SDK. Cada
+  função confere o token do Firebase Auth de quem chamou e recusa quem
+  não estiver na lista `ALLOWED_ADMIN_EMAILS` (ver `api/_lib/auth.mjs`).
+  Essa checagem de e-mail — não a tela de login — é o limite de
+  segurança real.
+- **Leitura**: pública pra quem está `published: true`; um rascunho só é
+  lido por quem estiver autenticado (`request.auth != null`) — protege
+  imóvel incompleto/com preço não decidido de aparecer numa consulta
+  direta ao Firestore por alguém de fora.
+- **Fotos e vídeo**: o navegador sobe **direto pro Cloudinary**, sem
+  passar pelo servidor — usando um *upload preset unsigned* (configurado
+  uma vez no Dashboard do Cloudinary, ver Setup abaixo) que já limita
+  resolução/qualidade na entrada. Isso evita o limite de tamanho de
+  payload das funções serverless e elimina a necessidade de converter
+  imagem no servidor (não tem mais `sharp` no projeto).
+- **Código do imóvel**: um contador atômico (`_meta/counters`, incrementado
+  numa transação do Firestore) gera `TB-0001`, `TB-0002`... na criação —
+  evita corrida entre os dois usuários cadastrando ao mesmo tempo.
+- **Exclusão**: ao excluir um imóvel, a função também apaga as fotos e o
+  vídeo dele no Cloudinary (a partir das URLs salvas no próprio doc, não
+  de um nome de pasta) — evita lixo consumindo a cota grátis.
+- **Site**: continua lendo o Firestore **ao vivo**
+  (`useProperties()`/`useAllProperties()` em `src/hooks/useProperties.ts`)
+  — publicar/editar um imóvel não exige novo deploy no Vercel, só quando
+  o **código** do site muda.
 
 ## Por que essas escolhas (trade-offs)
 
 | Decisão | Por quê |
 |---|---|
-| **Cloudinary** em vez de Firebase Storage | Firebase Storage passou a exigir o plano Blaze (cartão) mesmo dentro da cota grátis, a partir de fev/2026. Cloudinary tem plano grátis real (sem cartão), com API própria e otimização de imagem embutida. |
-| **GitHub Actions** em vez de Firebase Cloud Functions agendada | Cloud Functions agendadas também exigem o plano Blaze. GitHub Actions é grátis sem cartão. |
-| **GitHub Actions** em vez de Vercel Cron | O Vercel Hobby (grátis) limita cron jobs a 1x por dia — um imóvel novo podia demorar até 24h para aparecer. |
-| **Repositório público** em vez de privado | Repositório privado só tem 2.000 min/mês grátis de Actions — cada execução conta como 1 min (arredondado pra cima), e mesmo o cron original de 15 em 15 min (~2.880 min/mês) já estourava essa cota. Repositório **público** tem Actions **ilimitado e grátis**, o que permite rodar no intervalo mínimo do GitHub (5 min) sem risco de cobrança. Nenhuma credencial fica exposta — Secrets do GitHub são criptografados e nunca aparecem no código nem nos logs, em repositório público ou privado; só o código-fonte do site fica visível, sem nada sigiloso. |
-| **Estado de sync no Firestore**, não no Drive | Evita precisar dar permissão de **escrita** ao service account no seu Drive. Ele só precisa ser "Leitor" da pasta — mais seguro, e mais simples de configurar. |
-| **`PRONTO.txt` como marcador** | Sem isso, o robô podia publicar um imóvel pela metade enquanto as fotos ainda estão subindo (Drive sincroniza arquivo por arquivo). |
-| **Duas pastas de origem (Envio + Casas - Site), cada uma com seu dono** | Cauan e o corretor têm o próprio espaço pra organizar, sem precisar de acesso de editor na pasta um do outro — evita o problema original (cota de compartilhamento de conta nova do Google) e deixa cada um responsável só pelo que cria. |
-| **Detecção de duplicidade (`findDuplicate`)** | Mesmo com pastas separadas, nada impede as duas pessoas criarem uma pasta pro mesmo imóvel (mesmo nome ou não) sem saber uma da outra. Sem uma trava, isso publicaria como dois imóveis separados. O robô agora recusa publicar e avisa no log quando detecta duas pastas (em qualquer uma das duas origens) gerando o mesmo slug ou o mesmo título. O combinado de processo continua sendo a primeira linha de defesa: cada um só cria pasta na própria pasta (ver `GUIA-CORRETOR.md`). |
-| **Agendamento via cron-job.org, não só o `schedule` do GitHub Actions** | O gatilho `schedule` nativo do GitHub é "melhor esforço" e atrasa bastante agendamentos curtos (a cada 5 min) em repositórios de baixo tráfego — na prática rodava a cada poucas horas, não a cada 5 min. Um cron externo grátis (cron-job.org) chama a API do GitHub (`workflow_dispatch`) a cada 5 min de verdade, contornando esse atraso. O `schedule` do workflow continua no ar como reforço/fallback. |
-| **Endereço completo salvo mas não exibido publicamente** | Prática comum no mercado imobiliário: evita visitas "espontâneas" sem o corretor. Fácil de reverter (ver abaixo). |
-| **`cover` separado + `gallery[0]` = mesma foto** | O pipeline sempre inclui a capa como primeiro item de `gallery` também, então tanto um campo `cover` dedicado quanto o índice `[0]` da galeria mostram a mesma foto — qualquer um dos dois funciona pra exibir a capa. |
+| **Vercel Functions** em vez de Firebase Cloud Functions | Cloud Functions (2ª geração) também exigem o plano pago Blaze. Vercel Functions rodam no plano Hobby (grátis) sem cartão, e o projeto já está hospedado lá. |
+| **Upload direto do navegador pro Cloudinary** em vez de rotear pela função serverless | Evita o limite de tamanho de payload das funções e dispensa reimplementar no servidor o que o preset do Cloudinary já faz na entrada (limitar largura, `quality:auto`, `format:auto`). A API secret nunca sai do servidor — só o `cloud_name` e o nome do preset aparecem no cliente, e isso não é segredo (é assim que upload unsigned sempre funciona). |
+| **Regras do Firestore continuam `write: if false`** | Preserva a decisão de segurança já existente (só Admin SDK escreve) em vez de afrouxar pra "qualquer usuário autenticado" — a superfície de ataque fica menor: mesmo que alguém descubra um jeito de se autenticar, ainda precisa estar na lista `ALLOWED_ADMIN_EMAILS` checada no servidor. |
+| **Rascunho vira invisível pra quem não está logado** (`published == true \|\| request.auth != null`) | Antes, toda a coleção era de leitura pública — aceitável quando só existia "publicado", mas um rascunho (preço não decidido, fotos incompletas) não deveria vazar numa consulta direta ao Firestore por fora do site. |
+| **Reordenação de foto por botões, não arrastar** | HTML5 drag-and-drop nativo não funciona em touch (celular/tablet), e o corretor provavelmente cadastra pelo celular. Setas de mover + "definir como capa" funcionam em qualquer dispositivo, sem dependência nova. |
+| **Vídeo por upload de arquivo, não link externo** | Decisão do corretor/Cauan: mais simples pro corretor (não precisa hospedar em outro lugar), ao custo de consumir a cota do Cloudinary mais rápido — por isso o teto de 100 MB por vídeo. |
+| **Cloudinary** em vez de Firebase Storage | Firebase Storage exige o plano pago Blaze (cartão) mesmo dentro da cota grátis, desde fev/2026. Cloudinary tem plano grátis real (sem cartão), com upload unsigned e otimização de imagem/vídeo embutida. |
 
 ## Custos (mantendo tudo dentro do free tier)
 
 | Serviço | Uso | Custo |
 |---|---|---|
-| Vercel (Hobby) | Hospedagem do site | R$ 0 |
+| Vercel (Hobby) | Hospedagem do site + funções de escrita (`api/`) | R$ 0 |
+| Firebase Auth (Spark) | Login do painel (2 contas) | R$ 0 |
 | Firebase Firestore (Spark) | Dados dos imóveis | R$ 0 (até 1 GiB armazenado / 50k leituras por dia — bem acima do necessário) |
-| Cloudinary (Free) | Fotos dos imóveis | R$ 0 (25 créditos/mês — 1 crédito = 1 GB de armazenamento OU 1 GB de banda OU 1.000 transformações; sem cartão) |
-| GitHub Actions | Roda o sync a cada 5 min | R$ 0 (repositório **público** → Actions ilimitado; em repositório privado precisaria ficar em ~15-20 min para caber nos 2.000 min/mês grátis) |
-| Google Drive | Onde você organiza as fotos | R$ 0 (usa o seu Drive pessoal já existente) |
+| Cloudinary (Free) | Fotos e vídeos dos imóveis | R$ 0 (25 créditos/mês — 1 crédito = 1 GB de armazenamento OU 1 GB de banda OU 1.000 transformações; sem cartão) |
 | **Domínio** | O único custo real | ~R$ 40–60/ano, dependendo do registrador |
 
-Se o volume de imóveis/fotos/visitas crescer muito, o Cloudinary pode
-eventualmente passar dos 25 créditos/mês — é só monitorar no painel do
-Cloudinary; hoje está muito longe disso, e a fotos já saem otimizadas
-(`.webp`, redimensionadas a 1920px) para render o crédito.
+Vídeo consome a cota do Cloudinary bem mais rápido que foto — vale
+acompanhar o painel do Cloudinary de vez em quando se o uso de vídeo
+crescer.
 
 ## Setup — o que só você pode fazer
 
 Isso é feito **uma única vez**. Depois disso, o dia a dia é só seguir o
 `GUIA-CORRETOR.md`.
 
-### 1. Criar a conta no Cloudinary e pegar as credenciais
+### 1. Cloudinary — presets de upload unsigned
 
-1. Crie uma conta grátis em [cloudinary.com](https://cloudinary.com/users/register/free)
-   (não pede cartão).
-2. No **Dashboard**, copie três valores: **Cloud name**, **API Key** e
-   **API Secret**.
-3. Localmente, crie um arquivo `.env.local` na raiz do projeto (já está
-   no `.gitignore` — nunca vai pro GitHub) com:
+1. Se ainda não tem, crie uma conta grátis em
+   [cloudinary.com](https://cloudinary.com/users/register/free) (sem cartão).
+2. No Dashboard, copie o **Cloud name** (vai virar `VITE_CLOUDINARY_CLOUD_NAME`
+   e `CLOUDINARY_CLOUD_NAME`) e a **API Key**/**API Secret** (só
+   `CLOUDINARY_API_KEY`/`CLOUDINARY_API_SECRET`, servidor).
+3. Vá em **Settings → Upload → Upload presets → Add upload preset**:
+   - **Signing Mode**: Unsigned.
+   - **Folder**: deixe em branco (o painel já manda a pasta certa em cada upload).
+   - Em **Incoming Transformations**, adicione: largura máxima 1920px,
+     `Quality: auto`, `Format: auto` — isso substitui o que antes era
+     feito com `sharp` no servidor.
+   - Salve e copie o **nome do preset** — vira `VITE_CLOUDINARY_UPLOAD_PRESET`.
+4. (Opcional, recomendado) Crie um segundo preset só pra vídeo, com uma
+   transformação de entrada limitando a 720p — ajuda a seu vídeo comum
+   consumir menos da cota grátis. Se não quiser complicar, o mesmo preset
+   do passo 3 funciona pros dois tipos de arquivo.
 
-   ```
-   CLOUDINARY_CLOUD_NAME=seu-cloud-name
-   CLOUDINARY_API_KEY=sua-api-key
-   CLOUDINARY_API_SECRET=seu-api-secret
-   ```
-4. Rode `npm run add-listing` (com a pasta `incoming/imovel-teste/` já
-   preparada) para validar que o upload funciona antes de mexer no Drive.
+### 2. Firebase Auth — habilitar e criar as 2 contas
 
-### 2. Google Drive — as duas pastas de origem
+1. No [console do Firebase](https://console.firebase.google.com/), projeto
+   `tbn-imoveis-site` → **Authentication** → **Sign-in method** → habilite
+   **E-mail/senha**.
+2. Em **Users**, clique **Add user** e crie uma conta pro Cauan e outra
+   pro Toninho (e-mail + senha). Guarde os e-mails — eles vão pra
+   variável `ALLOWED_ADMIN_EMAILS` no passo 3.
 
-1. Crie **duas pastas**, uma em cada conta:
-   - **"Envio"**, no seu Drive pessoal (Cauan organiza aqui).
-   - **"Casas - Site"**, no Drive do corretor (ele organiza aqui, sem
-     precisar de acesso à sua pasta).
-2. Abra cada uma, copie o **ID** de cada URL:
-   `https://drive.google.com/drive/folders/`**`ESTE-PEDAÇO-AQUI-É-O-ID`**
-3. Guarde os dois IDs — viram as variáveis `DRIVE_ENVIO_FOLDER_ID`
-   ("Envio") e `DRIVE_FOLDER_ID` ("Casas - Site") no GitHub (passo 6).
+### 3. Variáveis de ambiente na Vercel
 
-### 3. Habilitar a API do Google Drive no mesmo projeto do Firebase
+No projeto na Vercel → **Settings → Environment Variables**, adicione:
 
-O service account que já existe (`service-account.json`, projeto
-`tbn-imoveis-site`) pode ser reaproveitado — só precisa liberar a API:
+| Variável | Onde pegar |
+|---|---|
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Conteúdo inteiro do `service-account.json` (já existente — mesmo usado antes pelo GitHub Actions) |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Dashboard do Cloudinary (passo 1) |
+| `ALLOWED_ADMIN_EMAILS` | Os 2 e-mails do passo 2, separados por vírgula |
+| `VITE_CLOUDINARY_CLOUD_NAME` | Mesmo Cloud name do passo 1 |
+| `VITE_CLOUDINARY_UPLOAD_PRESET` | Nome do preset do passo 1 |
 
-1. Acesse o [Google Cloud Console](https://console.cloud.google.com/apis/library/drive.googleapis.com)
-   com o mesmo projeto `tbn-imoveis-site` selecionado.
-2. Clique em **"Ativar"** na API do Google Drive.
+Pra testar localmente, copie `.env.local.example` pra `.env.local` e
+preencha os mesmos valores; use `vercel dev` (não `npm run dev`) quando
+quiser testar as funções em `api/` também, não só o frontend.
 
-### 4. Compartilhar as duas pastas do Drive com o service account
+### 4. Migrar os imóveis já publicados
 
-1. Abra `service-account.json` e copie o valor do campo `"client_email"`
-   (algo como `firebase-adminsdk-xxxxx@tbn-imoveis-site.iam.gserviceaccount.com`).
-2. No Google Drive, em **cada uma** das duas pastas ("Envio" e
-   "Casas - Site"), clique com o botão direito → **Compartilhar** → cole
-   esse e-mail → permissão **Leitor** → Enviar. (Só leitura mesmo — o
-   robô nunca escreve no Drive, só lê e publica no Firestore/Cloudinary.)
-
-### 5. Criar o repositório no GitHub e subir o código
-
-O projeto já tem um repositório Git local (criado durante esta sessão,
-com 2 commits). Falta só o repositório remoto:
-
-Crie um repositório no GitHub (ex: `tbn-imoveis-site`) e depois:
+Se já existem imóveis no Firestore (publicados pelo fluxo antigo do
+Drive), rode uma vez:
 
 ```bash
-git remote add origin https://github.com/SEU-USUARIO/tbn-imoveis-site.git
-git branch -M main
-git push -u origin main
+npm run migrate-admin-fields
 ```
 
-> ⚠️ **Nunca** commite `service-account.json` nem `.env.local` — os dois
-> já estão no `.gitignore`, confirme que não aparecem em `git status`
-> antes do push.
+Isso dá um `code` (`TB-0001`, `TB-0002`...) pra quem ainda não tem e
+marca `published: true` em tudo que já estava no ar.
 
-### 6. Configurar os secrets/variáveis do GitHub Actions
+### 5. Regras do Firestore
 
-No repositório, vá em **Settings → Secrets and variables → Actions**:
+```bash
+npm run deploy:rules
+```
 
-- Aba **Secrets** → **New repository secret**, crie estes 4:
-  - `FIREBASE_SERVICE_ACCOUNT_JSON` → cole o **conteúdo inteiro** do
-    arquivo `service-account.json`
-  - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
-    → os mesmos valores do passo 1
-- Aba **Variables** → **New repository variable**, crie estas 2:
-  - `DRIVE_FOLDER_ID` → ID da pasta **"Casas - Site"** (passo 2)
-  - `DRIVE_ENVIO_FOLDER_ID` → ID da pasta **"Envio"** (passo 2)
+Publica `firestore.rules` (leitura só do publicado + índice em
+`firestore.indexes.json`).
 
-### 7. Testar
-
-Na aba **Actions** do repositório, escolha o workflow
-**"Sincronizar imóveis do Google Drive"** → **Run workflow** → rodar
-manualmente. Acompanhe o log — ele mostra pasta por pasta o que foi
-publicado, ignorado ou está aguardando o `PRONTO.txt`.
-
-Depois disso, o cron (`*/5 * * * *`) assume sozinho — **na prática, com
-um adendo**: o gatilho `schedule` nativo do GitHub atrasa bastante
-agendamentos curtos (rodava a cada poucas horas, não a cada 5 min, em
-testes reais). Por isso existe o passo 8 abaixo.
-
-### 8. Cron externo (cron-job.org) — dispara de verdade a cada 5 min
-
-1. Crie uma conta grátis em [cron-job.org](https://cron-job.org/en/signUp/)
-   (sem cartão) e confirme o e-mail.
-2. Gere um token do GitHub em
-   [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new):
-   **Repository access** → só o repositório deste projeto; **Permissions**
-   → **Actions** → **Read and write**.
-3. Em [console.cron-job.org](https://console.cron-job.org) → seu usuário
-   → **Settings** → aba **API** → ative e copie a chave.
-4. Crie o cronjob via API (`PUT https://api.cron-job.org/jobs`, header
-   `Authorization: Bearer <chave da API>`) apontando pra:
-
-   ```
-   POST https://api.github.com/repos/<usuario>/<repo>/actions/workflows/sync-drive.yml/dispatches
-   Headers: Authorization: Bearer <token do GitHub>, Accept: application/vnd.github+json
-   Body: {"ref":"main"}
-   Agendamento: a cada 5 minutos
-   ```
-
-   (ou crie direto pela interface do console.cron-job.org, sem precisar
-   da API — o resultado final é o mesmo.)
-
-Isso é totalmente independente do cron nativo do GitHub Actions — os dois
-ficam ativos ao mesmo tempo, sem conflito (o `sync-drive.mjs` é idempotente:
-rodar de novo sem nada ter mudado só imprime "sem mudanças").
-
-### 9. Vercel
-
-O deploy do site continua manual, só quando o **código** muda:
+### 6. Vercel — deploy
 
 ```bash
 npm run build
 vercel --prod --yes --project toninho-bomnome
 ```
 
-Imóveis novos **não** precisam disso — eles aparecem via Firestore em
-tempo real.
+Só é necessário quando o **código** do site muda — publicar/editar um
+imóvel pelo painel não exige isso.
 
 ## O frontend (React + TypeScript + Tailwind)
 
-Em 24/08/2026 o frontend foi trocado pelo design "Planta aberta"
-(recuperado de um deploy anterior no Vercel via `vercel api` — o projeto
-tinha sido gerado numa sessão de design anterior mas nunca chegou a ser
-versionado em Git nem ligado a dados reais). A automação (Drive →
-GitHub Actions → Firestore/Cloudinary) não mudou — só o que lê e exibe
-os dados mudou.
-
-O contrato de dados entre o pipeline e o frontend é o tipo `Property`
-em `src/types.ts`. Qualquer campo novo precisa existir dos dois lados:
-em `scripts/lib/pipeline.mjs` (quem escreve no Firestore) e em
-`src/types.ts` + nos componentes que exibem esse campo.
-
-Suporte a aluguel (`dealType: "Venda" | "Aluguel"`) foi adicionado por
-cima do design original, que só previa venda — por isso `status`
-(`Disponível`/`Em negociação`) e `dealType` são campos separados: um
-descreve a fase do negócio, o outro o tipo de negócio.
+O contrato de dados entre as funções de escrita e o frontend é o tipo
+`Property` em `src/types.ts`. Qualquer campo novo precisa existir dos
+dois lados: em `api/properties/*.mjs` (quem escreve no Firestore) e nos
+componentes que exibem esse campo.
 
 ## Onde mexer se quiser mudar algo
 
-- **Frequência do sync**: `.github/workflows/sync-drive.yml`, linha do `cron`.
-- **Exibir o endereço completo na página do imóvel**: `src/pages/PropertyDetail.tsx`
-  (o dado já vem em `property.street`, só falta renderizar).
-- **Formato/tags aceitas no `imovel.md`**: `scripts/lib/pipeline.mjs`,
-  função `parseListingMarkdown`.
-- **Regras de quais arquivos viram capa/foto/são ignorados**:
-  `scripts/lib/pipeline.mjs`, função `classifyListingFiles`.
-- **Qualidade/tamanho das fotos**: `scripts/lib/pipeline.mjs`, constantes
-  `MAX_WIDTH` e `QUALITY`.
-- **Faixas de preço do filtro/busca**: `src/pages/Imoveis.tsx` e
-  `src/components/HeroSearch.tsx`, objeto `priceRanges`.
+- **Lista de tipos aceitos** (Casa, Apartamento...): `src/types.ts`, `PROPERTY_TYPES`.
+- **Quem tem acesso ao painel**: variável `ALLOWED_ADMIN_EMAILS` na Vercel + contas no Firebase Auth.
+- **Tamanho máximo de foto/vídeo**: `src/lib/cloudinaryUpload.ts`, `MAX_PHOTO_SIZE_MB`/`MAX_VIDEO_SIZE_MB`.
+- **Exibir o endereço completo na página do imóvel**: `src/pages/PropertyDetail.tsx` (o dado já vem em `property.street`, só falta renderizar).
+- **Faixas de preço do filtro/busca**: `src/pages/Imoveis.tsx` e `src/components/HeroSearch.tsx`, objeto `priceRanges`.
+- **Formato do código do imóvel** (`TB-0001`): `scripts/lib/pipeline.mjs`, função `getNextPropertyCode`.

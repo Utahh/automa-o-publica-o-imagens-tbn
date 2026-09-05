@@ -8,10 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "add-listing": "node scripts/add-listing.mjs",
-    "sync-drive": "node scripts/sync-drive.mjs",
+    "migrate-admin-fields": "node scripts/migrate-admin-fields.mjs",
     "deploy:rules": "npx firebase-tools deploy --only firestore:rules",
-    "publish": "npm run add-listing && npm run build && vercel --prod --yes --project toninho-bomnome"
+    "publish": "npm run build && vercel --prod --yes --project toninho-bomnome"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -20,7 +19,6 @@
     "firebase": "^12.18.0",
     "firebase-admin": "^14.3.0",
     "framer-motion": "^13.1.0",
-    "google-auth-library": "^9.15.0",
     "lucide-react": "^1.31.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -33,12 +31,10 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
     "oxlint": "^1.75.0",
-    "sharp": "^0.34.5",
     "typescript": "~6.0.2",
     "vite": "^8.2.0"
   },
   "allowScripts": {
-    "sharp@0.34.5": true,
     "@firebase/util@1.15.3": true,
     "protobufjs@7.6.5": true
   }

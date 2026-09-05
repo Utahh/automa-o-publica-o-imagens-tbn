@@ -12,9 +12,6 @@ dist
 dist-ssr
 *.local
 
-# fotos originais (não otimizadas) aguardando processamento
-incoming/
-
 # rascunhos/capturas de tela soltas, não são assets do site
 Fotos/
 
@@ -44,6 +41,9 @@ firebase-debug.log*
 firestore-debug.log*
 storage-debug.log*
 .firebase/
+
+# Vercel (link local do projeto, não é config versionada)
+.vercel/
 
 # Chaves de conta de serviço (NÃO commitar nunca)
 service-account*.json
