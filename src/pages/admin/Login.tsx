@@ -6,7 +6,7 @@ import { HeroSymbol } from "../../components/HeroSymbol";
 import { useAuth } from "../../hooks/useAuth";
 
 export function Login() {
-  const { user, isAdmin, loading, signIn, signInWithGoogle, signOut } = useAuth();
+  const { user, isAdmin, loading, googleError, signIn, signInWithGoogle, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
@@ -15,6 +15,7 @@ export function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const reduceMotion = useReducedMotion();
+  const displayError = error || googleError;
 
   const state = location.state as { from?: { pathname?: string }; denied?: boolean } | null;
 
@@ -49,11 +50,12 @@ export function Login() {
     setError(null);
     setGoogleSubmitting(true);
     try {
+      // Navega pro Google e volta — se der certo, a sessão aparece via
+      // onAuthStateChanged depois do redirect de volta (ver useAuth), não
+      // como retorno desta chamada.
       await signInWithGoogle();
-      navigate("/admin", { replace: true });
     } catch {
       setError("Não deu pra entrar com o Google. Tente de novo.");
-    } finally {
       setGoogleSubmitting(false);
     }
   }
@@ -113,9 +115,9 @@ export function Login() {
         <h1 className="mt-5 text-balance font-display text-xl font-semibold text-grafite">Painel de cadastro</h1>
         <p className="mt-1 font-display text-sm text-grafite-muted">Acesso restrito ao corretor e à administração.</p>
 
-        {error && (
+        {displayError && (
           <p aria-live="polite" className="mt-4 font-display text-[13px] text-amber-700">
-            {error}
+            {displayError}
           </p>
         )}
 
