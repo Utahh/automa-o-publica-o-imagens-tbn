@@ -8,6 +8,12 @@ export function getFeaturedProperties(properties: Property[]) {
   return properties.filter((p) => p.featured);
 }
 
+/** Imóveis sem o "Destaque" ativado no cadastro — aparecem na home, só que
+ *  sem o tratamento de vitrine (ver MoreListingsSection). */
+export function getNonFeaturedProperties(properties: Property[]) {
+  return properties.filter((p) => !p.featured);
+}
+
 export function getRelatedProperties(properties: Property[], current: Property, limit = 3) {
   return properties
     .filter((p) => p.id !== current.id)

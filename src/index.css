@@ -38,6 +38,23 @@
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+  /* Mantém a barra de rolagem sempre reservada — sem isso, o filtro
+     (Radix Select) trava o scroll ao abrir e a barra some, fazendo a
+     página inteira "pular" pros lados quando o menu abre/fecha.
+     (scrollbar-gutter: stable seria o jeito moderno de resolver isso,
+     mas não reserva o espaço quando o overflow propaga do body pro
+     elemento raiz — overflow-y: scroll é o que realmente funciona aqui.) */
+  overflow-y: scroll;
+}
+
+/* A biblioteca por trás do Select (react-remove-scroll-bar) ainda tenta
+   compensar uma barra de rolagem que, com a regra acima, nunca desaparece
+   — sem isso aqui, ela empurra o conteúdo pra esquerda (margin-right)
+   pra compensar algo que já não muda, criando um deslocamento novo.
+   Especificidade maior que a deles pra vencer o !important. */
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
 }
 
 body {

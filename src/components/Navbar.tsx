@@ -10,8 +10,6 @@ import { useScrolled } from "../hooks/useScrolled";
 const links = [
   { to: "/", label: "Início" },
   { to: "/imoveis", label: "Imóveis" },
-  { to: "/#sobre", label: "Sobre" },
-  { to: "/#contato", label: "Contato" },
 ];
 
 interface NavbarProps {

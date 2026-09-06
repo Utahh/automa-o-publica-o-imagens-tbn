@@ -22,7 +22,6 @@ export function Footer() {
           <ul className="mt-4 space-y-2.5 font-display text-sm">
             <li><Link to="/" className="text-cinza-papel/85 transition-colors hover:text-azul-sinal">Início</Link></li>
             <li><Link to="/imoveis" className="text-cinza-papel/85 transition-colors hover:text-azul-sinal">Imóveis</Link></li>
-            <li><a href="/#sobre" className="text-cinza-papel/85 transition-colors hover:text-azul-sinal">Sobre o Toninho</a></li>
           </ul>
         </div>
 
