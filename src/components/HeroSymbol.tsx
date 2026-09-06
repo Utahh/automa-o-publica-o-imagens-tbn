@@ -15,8 +15,12 @@ const roomVariants = {
  * A planta do símbolo, desenhada ao vivo: o muro traça o perímetro (com o vão
  * de porta sempre aberto) e os ambientes aparecem em seguida — a sala azul
  * por último, com um leve pulso contínuo.
+ *
+ * `loop`: em vez de desenhar uma vez só e parar, o traço do muro repete
+ * indefinidamente (retraçando o perímetro a cada ciclo) — usado como pano
+ * de fundo decorativo (ex: tela de login), não na entrada da home.
  */
-export function HeroSymbol({ className }: { className?: string }) {
+export function HeroSymbol({ className, loop = false }: { className?: string; loop?: boolean }) {
   return (
     <motion.svg
       viewBox="0 0 120 120"
@@ -86,7 +90,11 @@ export function HeroSymbol({ className }: { className?: string }) {
         strokeLinejoin="miter"
         initial={{ pathLength: 0 }}
         animate={{ pathLength: 1 }}
-        transition={{ duration: 1.3, ease: "easeInOut" }}
+        transition={
+          loop
+            ? { duration: 2.6, ease: "easeInOut", repeat: Infinity, repeatType: "loop", repeatDelay: 1.6 }
+            : { duration: 1.3, ease: "easeInOut" }
+        }
       />
     </motion.svg>
   );

@@ -60,16 +60,36 @@ export function Login() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-grafite-noite px-6">
       {/* Mesmo tratamento de fundo do Hero da home: gradiente radial + grade sutil */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(39,82,127,0.35),transparent_55%)]" />
+      <motion.div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(39,82,127,0.35),transparent_55%)]"
+        animate={{ opacity: [0.7, 1, 0.7] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+      />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(239,240,241,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(239,240,241,0.035)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_75%)]" />
 
-      {/* A planta do símbolo se desenhando ao fundo, bem grande e discreta */}
-      <div className="pointer-events-none absolute -bottom-24 -right-24 opacity-[0.15] sm:-bottom-32 sm:-right-32">
-        <HeroSymbol className="h-[420px] w-[420px] sm:h-[560px] sm:w-[560px]" />
-      </div>
-      <div className="pointer-events-none absolute -left-28 -top-28 opacity-[0.08] sm:-left-36 sm:-top-36">
-        <HeroSymbol className="h-[340px] w-[340px] sm:h-[440px] sm:w-[440px]" />
-      </div>
+      {/* Linha de varredura estilo scanner de planta, cruzando a tela devagar */}
+      <motion.div
+        className="pointer-events-none absolute inset-x-0 h-32 bg-[linear-gradient(rgba(121,162,208,0)_0%,rgba(121,162,208,0.09)_50%,rgba(121,162,208,0)_100%)]"
+        initial={{ top: "-15%" }}
+        animate={{ top: "115%" }}
+        transition={{ duration: 7, repeat: Infinity, ease: "linear", repeatDelay: 1.2 }}
+      />
+
+      {/* A planta do símbolo se desenhando ao fundo, em loop, à deriva bem devagar */}
+      <motion.div
+        className="pointer-events-none absolute -bottom-24 -right-24 opacity-[0.16] blur-[0.5px] sm:-bottom-32 sm:-right-32"
+        animate={{ x: [0, -18, 0], y: [0, 14, 0] }}
+        transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <HeroSymbol loop className="h-[420px] w-[420px] sm:h-[560px] sm:w-[560px]" />
+      </motion.div>
+      <motion.div
+        className="pointer-events-none absolute -left-28 -top-28 opacity-[0.09] blur-[0.5px] sm:-left-36 sm:-top-36"
+        animate={{ x: [0, 16, 0], y: [0, -12, 0] }}
+        transition={{ duration: 32, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+      >
+        <HeroSymbol loop className="h-[340px] w-[340px] sm:h-[440px] sm:w-[440px]" />
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.97 }}
