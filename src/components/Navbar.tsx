@@ -57,10 +57,11 @@ export function Navbar({ transparentAtTop = false }: NavbarProps) {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-cinza-papel md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-cinza-papel [touch-action:manipulation] md:hidden"
           aria-label={open ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={open}
         >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {open ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
         </button>
       </nav>
 

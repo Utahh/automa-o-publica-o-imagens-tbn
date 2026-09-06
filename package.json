@@ -14,9 +14,10 @@
     "publish": "npm run build && vercel --prod --yes --project toninho-bomnome"
   },
   "dependencies": {
+    "@radix-ui/react-select": "^2.3.7",
     "@tailwindcss/vite": "^4.3.3",
-    "clsx": "^2.1.1",
     "cloudinary": "^2.5.1",
+    "clsx": "^2.1.1",
     "firebase": "^12.18.0",
     "firebase-admin": "^14.3.0",
     "framer-motion": "^13.1.0",

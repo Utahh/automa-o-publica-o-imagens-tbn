@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 const WALL_PATH = "M 28.8 120 L 0 120 L 0 0 L 120 0 L 120 120 L 64.8 120";
 
@@ -19,13 +19,18 @@ const roomVariants = {
  * `loop`: em vez de desenhar uma vez só e parar, o traço do muro repete
  * indefinidamente (retraçando o perímetro a cada ciclo) — usado como pano
  * de fundo decorativo (ex: tela de login), não na entrada da home.
+ *
+ * Respeita prefers-reduced-motion: quem prefere menos movimento vê o
+ * símbolo já no estado final, sem desenho, flutuação nem pulso.
  */
 export function HeroSymbol({ className, loop = false }: { className?: string; loop?: boolean }) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <motion.svg
       viewBox="0 0 120 120"
       className={className}
-      animate={{ y: [0, -8, 0] }}
+      animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
       transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
     >
       <motion.rect
@@ -35,7 +40,7 @@ export function HeroSymbol({ className, loop = false }: { className?: string; lo
         height={39.18}
         fill="var(--color-cinza-papel)"
         variants={roomVariants}
-        initial="hidden"
+        initial={reduceMotion ? false : "hidden"}
         animate="visible"
         custom={0.9}
       />
@@ -46,7 +51,7 @@ export function HeroSymbol({ className, loop = false }: { className?: string; lo
         height={39.18}
         fill="var(--color-cinza-papel)"
         variants={roomVariants}
-        initial="hidden"
+        initial={reduceMotion ? false : "hidden"}
         animate="visible"
         custom={1.05}
       />
@@ -57,7 +62,7 @@ export function HeroSymbol({ className, loop = false }: { className?: string; lo
         height={56.82}
         fill="var(--color-cinza-papel)"
         variants={roomVariants}
-        initial="hidden"
+        initial={reduceMotion ? false : "hidden"}
         animate="visible"
         custom={1.2}
       />
@@ -68,7 +73,7 @@ export function HeroSymbol({ className, loop = false }: { className?: string; lo
         height={56.82}
         fill="var(--color-azul-sinal)"
         variants={roomVariants}
-        initial="hidden"
+        initial={reduceMotion ? false : "hidden"}
         animate="visible"
         custom={1.35}
       />
@@ -79,8 +84,8 @@ export function HeroSymbol({ className, loop = false }: { className?: string; lo
         height={56.82}
         fill="var(--color-azul-sinal)"
         initial={{ opacity: 0.55 }}
-        animate={{ opacity: [0.55, 0.85, 0.55] }}
-        transition={{ delay: 2, duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+        animate={reduceMotion ? { opacity: 0.7 } : { opacity: [0.55, 0.85, 0.55] }}
+        transition={reduceMotion ? undefined : { delay: 2, duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.path
         d={WALL_PATH}
@@ -88,12 +93,14 @@ export function HeroSymbol({ className, loop = false }: { className?: string; lo
         stroke="var(--color-cinza-papel)"
         strokeWidth={6}
         strokeLinejoin="miter"
-        initial={{ pathLength: 0 }}
+        initial={reduceMotion ? false : { pathLength: 0 }}
         animate={{ pathLength: 1 }}
         transition={
-          loop
-            ? { duration: 2.6, ease: "easeInOut", repeat: Infinity, repeatType: "loop", repeatDelay: 1.6 }
-            : { duration: 1.3, ease: "easeInOut" }
+          reduceMotion
+            ? undefined
+            : loop
+              ? { duration: 2.6, ease: "easeInOut", repeat: Infinity, repeatType: "loop", repeatDelay: 1.6 }
+              : { duration: 1.3, ease: "easeInOut" }
         }
       />
     </motion.svg>

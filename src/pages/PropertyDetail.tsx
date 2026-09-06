@@ -26,7 +26,7 @@ export function PropertyDetail() {
   const whatsappMessage = `Olá, Toninho! Tenho interesse no imóvel "${property.title}" (${property.neighborhood}, ${property.city}). Podemos conversar?`;
 
   return (
-    <div className="min-h-screen bg-cinza-papel pb-24 pt-24 md:pb-16">
+    <div className="min-h-screen bg-cinza-papel pb-16 pt-24">
       <div className="mx-auto max-w-7xl px-6 sm:px-8">
         <Reveal y={12}>
           <Link

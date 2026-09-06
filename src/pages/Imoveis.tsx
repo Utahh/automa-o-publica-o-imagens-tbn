@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { SlidersHorizontal, X } from "lucide-react";
 import { PropertyCard } from "../components/PropertyCard";
+import { FilterSelect } from "../components/FilterSelect";
 import { Reveal } from "../components/Reveal";
 import { useProperties } from "../hooks/useProperties";
 
@@ -42,24 +43,26 @@ export function Imoveis() {
   }, [properties, neighborhood, type, dealType, price]);
 
   const hasFilters = Boolean(neighborhood || type || dealType || price);
+  const reduceMotion = useReducedMotion();
 
   return (
-    <div className="min-h-screen bg-cinza-papel pb-24 pt-28 md:pb-16">
+    <div className="min-h-screen bg-cinza-papel pb-16 pt-28">
       <div className="mx-auto max-w-7xl px-6 sm:px-8">
         <Reveal>
-          <p className="font-mono text-xs font-medium uppercase tracking-[0.3em] text-azul-escritura">
+          <p aria-live="polite" className="font-mono text-xs font-medium uppercase tracking-[0.3em] text-azul-escritura">
             {filtered.length} {filtered.length === 1 ? "imóvel encontrado" : "imóveis encontrados"}
           </p>
           <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-            <h1 className="font-display text-3xl font-semibold tracking-tight text-grafite sm:text-4xl">
+            <h1 className="text-balance font-display text-3xl font-semibold tracking-tight text-grafite sm:text-4xl">
               Todos os imóveis
             </h1>
             <button
               type="button"
               onClick={() => setFiltersOpen((v) => !v)}
-              className="flex items-center gap-2 rounded-full border border-grafite/15 px-4 py-2.5 font-display text-sm font-medium text-grafite md:hidden"
+              aria-expanded={filtersOpen}
+              className="flex items-center gap-2 rounded-full border border-grafite/15 px-4 py-2.5 font-display text-sm font-medium text-grafite [touch-action:manipulation] md:hidden"
             >
-              <SlidersHorizontal className="h-4 w-4" strokeWidth={2.2} />
+              <SlidersHorizontal className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
               Filtros
             </button>
           </div>
@@ -94,16 +97,16 @@ export function Imoveis() {
             <button
               type="button"
               onClick={() => setSearchParams(new URLSearchParams())}
-              className="flex items-center gap-1.5 font-display text-sm font-medium text-azul-escritura sm:ml-auto"
+              className="flex items-center gap-1.5 font-display text-sm font-medium text-azul-escritura [touch-action:manipulation] sm:ml-auto"
             >
-              <X className="h-4 w-4" strokeWidth={2.2} />
+              <X className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
               Limpar filtros
             </button>
           )}
         </div>
 
         {filtered.length > 0 ? (
-          <motion.div layout className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.div layout={!reduceMotion} className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((property, i) => (
               <PropertyCard key={property.id} property={property} index={i} />
             ))}
@@ -116,51 +119,5 @@ export function Imoveis() {
         )}
       </div>
     </div>
-  );
-}
-
-interface Option {
-  value: string;
-  label: string;
-}
-
-function FilterSelect({
-  label,
-  value,
-  onChange,
-  options,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: (string | Option)[];
-  placeholder: string;
-}) {
-  return (
-    <label className="flex flex-1 flex-col gap-1">
-      <span className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-grafite-muted">
-        {label}
-      </span>
-      <span className="relative flex items-center">
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="field-select !text-[14.5px]"
-        >
-          <option value="">{placeholder}</option>
-          {options.map((opt) => {
-            const value = typeof opt === "string" ? opt : opt.value;
-            const label = typeof opt === "string" ? opt : opt.label;
-            return (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            );
-          })}
-        </select>
-        <ChevronDown className="pointer-events-none absolute right-0 h-4 w-4 text-grafite-muted" strokeWidth={2.2} />
-      </span>
-    </label>
   );
 }

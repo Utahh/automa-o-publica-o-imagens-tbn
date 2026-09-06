@@ -220,7 +220,7 @@ export function PropertyForm() {
           <Field label="Descrição (parágrafos separados por linha em branco)" className="sm:col-span-2">
             <Textarea name="description" value={form.description} onChange={(v) => patch({ description: v })} rows={6} />
           </Field>
-          <Field label='"O que só quem mora perto sabe"' className="sm:col-span-2">
+          <Field label="“O que só quem mora perto sabe”" className="sm:col-span-2">
             <Textarea name="neighborhoodFact" value={form.neighborhoodFact} onChange={(v) => patch({ neighborhoodFact: v })} rows={3} />
           </Field>
         </Section>

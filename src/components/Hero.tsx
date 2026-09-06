@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { HeroSymbol } from "./HeroSymbol";
 import { HeroSearch } from "./HeroSearch";
@@ -16,6 +16,8 @@ const word = {
 };
 
 export function Hero() {
+  const reduceMotion = useReducedMotion();
+
   return (
     <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-grafite-noite pt-24">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(39,82,127,0.35),transparent_55%)]" />
@@ -83,8 +85,11 @@ export function Hero() {
         transition={{ delay: 1.4, duration: 0.6 }}
         className="relative mx-auto mb-8 hidden items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-papel-muted sm:flex"
       >
-        <motion.span animate={{ y: [0, 5, 0] }} transition={{ duration: 1.8, repeat: Infinity }}>
-          <ChevronDown className="h-4 w-4" />
+        <motion.span
+          animate={reduceMotion ? undefined : { y: [0, 5, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity }}
+        >
+          <ChevronDown className="h-4 w-4" aria-hidden="true" />
         </motion.span>
         Role para ver os imóveis
       </motion.div>

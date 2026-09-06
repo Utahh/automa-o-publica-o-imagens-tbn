@@ -3,7 +3,6 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
-import { MobileTabBar } from "./components/MobileTabBar";
 import { WhatsAppButton } from "./components/WhatsAppButton";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { RequireAdmin } from "./components/RequireAdmin";
@@ -50,7 +49,6 @@ function PublicSite() {
       </main>
 
       <Footer />
-      <MobileTabBar />
       <WhatsAppButton variant="floating" />
     </div>
   );

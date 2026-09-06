@@ -1,7 +1,8 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useProperties } from "../hooks/useProperties";
+import { FilterSelect } from "./FilterSelect";
 
 export function HeroSearch() {
   const navigate = useNavigate();
@@ -28,64 +29,47 @@ export function HeroSearch() {
       onSubmit={handleSubmit}
       className="grid grid-cols-1 divide-y divide-grafite/8 overflow-hidden rounded-2xl bg-cinza-papel shadow-[0_24px_60px_-20px_rgba(15,18,20,0.45)] sm:grid-cols-[1fr_1fr_1fr_1.15fr_auto] sm:divide-x sm:divide-y-0"
     >
-      <Field label="Bairro">
-        <select value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} className="field-select">
-          <option value="">Todos os bairros</option>
-          {neighborhoods.map((n) => (
-            <option key={n} value={n}>{n}</option>
-          ))}
-        </select>
-      </Field>
+      <div className="p-4">
+        <FilterSelect label="Bairro" value={neighborhood} onChange={setNeighborhood} options={neighborhoods} placeholder="Todos os bairros" />
+      </div>
 
-      <Field label="Tipo de imóvel">
-        <select value={type} onChange={(e) => setType(e.target.value)} className="field-select">
-          <option value="">Todos os tipos</option>
-          {types.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
-      </Field>
+      <div className="p-4">
+        <FilterSelect label="Tipo de imóvel" value={type} onChange={setType} options={types} placeholder="Todos os tipos" />
+      </div>
 
-      <Field label="Negócio">
-        <select value={dealType} onChange={(e) => setDealType(e.target.value)} className="field-select">
-          <option value="">Venda ou aluguel</option>
-          <option value="Venda">Venda</option>
-          <option value="Aluguel">Aluguel</option>
-        </select>
-      </Field>
+      <div className="p-4">
+        <FilterSelect
+          label="Negócio"
+          value={dealType}
+          onChange={setDealType}
+          options={["Venda", "Aluguel"]}
+          placeholder="Venda ou aluguel"
+        />
+      </div>
 
-      <Field label="Faixa de preço">
-        <select value={price} onChange={(e) => setPrice(e.target.value)} className="field-select">
-          <option value="">Qualquer valor</option>
-          <option value="ate-400">Até R$ 400 mil</option>
-          <option value="ate-700">Até R$ 700 mil</option>
-          <option value="acima-700">Acima de R$ 700 mil</option>
-        </select>
-      </Field>
+      <div className="p-4">
+        <FilterSelect
+          label="Faixa de preço"
+          value={price}
+          onChange={setPrice}
+          options={[
+            { value: "ate-400", label: "Até R$ 400 mil" },
+            { value: "ate-700", label: "Até R$ 700 mil" },
+            { value: "acima-700", label: "Acima de R$ 700 mil" },
+          ]}
+          placeholder="Qualquer valor"
+        />
+      </div>
 
       <div className="flex items-center p-2.5 sm:pl-2">
         <button
           type="submit"
-          className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-azul-escritura px-6 py-3.5 font-display text-sm font-semibold text-cinza-papel transition-colors hover:bg-azul-escritura-forte"
+          className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-azul-escritura px-6 py-3.5 font-display text-sm font-semibold text-cinza-papel [touch-action:manipulation] transition-colors hover:bg-azul-escritura-forte"
         >
           <Search className="h-4 w-4" strokeWidth={2.3} />
           Buscar
         </button>
       </div>
     </form>
-  );
-}
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1 p-4">
-      <span className="whitespace-nowrap font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-grafite-muted">
-        {label}
-      </span>
-      <span className="relative flex items-center">
-        {children}
-        <ChevronDown className="pointer-events-none absolute right-0 h-4 w-4 shrink-0 text-grafite-muted" strokeWidth={2.2} />
-      </span>
-    </label>
   );
 }

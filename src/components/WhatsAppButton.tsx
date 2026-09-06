@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
 import clsx from "clsx";
 import { buildWhatsappLink } from "../data/agent";
@@ -20,6 +20,7 @@ export function WhatsAppButton({
   label = "Falar no WhatsApp",
 }: WhatsAppButtonProps) {
   const href = buildWhatsappLink(message);
+  const reduceMotion = useReducedMotion();
 
   if (variant === "floating") {
     return (
@@ -27,19 +28,23 @@ export function WhatsAppButton({
         href={href}
         target="_blank"
         rel="noreferrer"
-        initial={{ opacity: 0, scale: 0.6, y: 20 }}
+        initial={reduceMotion ? false : { opacity: 0, scale: 0.6, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ delay: 1.1, type: "spring", stiffness: 260, damping: 20 }}
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.95 }}
+        style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
         className={clsx(
-          "fixed bottom-6 right-6 z-40 hidden items-center gap-2 rounded-full bg-azul-escritura px-5 py-3.5 text-cinza-papel shadow-[0_10px_30px_-8px_rgba(15,18,20,0.5)] md:flex",
+          "fixed right-4 z-40 flex items-center gap-2 rounded-full bg-azul-escritura px-4 py-3 text-cinza-papel shadow-[0_10px_30px_-8px_rgba(15,18,20,0.5)] sm:right-6 sm:px-5 sm:py-3.5",
           className,
         )}
         aria-label={label}
       >
-        <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-azul-escritura/50 [animation-duration:2.6s]" />
-        <MessageCircle className="h-5 w-5" strokeWidth={2.25} />
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 animate-ping rounded-full bg-azul-escritura/50 [animation-duration:2.6s] motion-reduce:animate-none"
+        />
+        <MessageCircle className="h-5 w-5" strokeWidth={2.25} aria-hidden="true" />
         <span className="font-display text-sm font-semibold">{label}</span>
       </motion.a>
     );
@@ -58,7 +63,7 @@ export function WhatsAppButton({
         className,
       )}
     >
-      <MessageCircle className="h-4.5 w-4.5 transition-transform group-hover:rotate-6" strokeWidth={2.25} />
+      <MessageCircle className="h-4.5 w-4.5 transition-transform group-hover:rotate-6" strokeWidth={2.25} aria-hidden="true" />
       {label}
     </a>
   );
