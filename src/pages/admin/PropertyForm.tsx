@@ -6,6 +6,7 @@ import { createProperty, updateProperty, type NewPropertyInput } from "../../lib
 import { PhotoManager } from "../../components/admin/PhotoManager";
 import { VideoUploader } from "../../components/admin/VideoUploader";
 import { LocationField, type LocationValue } from "../../components/admin/LocationField";
+import { Toggle } from "../../components/admin/Toggle";
 import { PROPERTY_TYPES, type DealType, type Property, type PropertyStatus, type PropertyType } from "../../types";
 
 interface FormState extends LocationValue {
@@ -20,6 +21,8 @@ interface FormState extends LocationValue {
   bedrooms: string;
   bathrooms: string;
   parking: string;
+  hasPool: boolean;
+  hasBarbecue: boolean;
   neighborhoodFact: string;
   description: string;
   gallery: string[];
@@ -43,6 +46,8 @@ const EMPTY_FORM: FormState = {
   bedrooms: "",
   bathrooms: "",
   parking: "",
+  hasPool: false,
+  hasBarbecue: false,
   neighborhoodFact: "",
   description: "",
   gallery: [],
@@ -67,7 +72,9 @@ function toFormState(p: Property): FormState {
     bedrooms: String(p.bedrooms || ""),
     bathrooms: String(p.bathrooms || ""),
     parking: String(p.parking || ""),
-    neighborhoodFact: p.neighborhoodFact,
+    hasPool: p.hasPool ?? false,
+    hasBarbecue: p.hasBarbecue ?? false,
+    neighborhoodFact: p.neighborhoodFact || "",
     description: p.description.join("\n\n"),
     gallery: p.gallery,
     video: p.video || "",
@@ -115,12 +122,28 @@ export function PropertyForm() {
   async function handleSubmit(publish: boolean) {
     setError(null);
 
-    if (!form.title.trim() || !form.neighborhood.trim() || !form.city.trim() || !form.state.trim() || !form.neighborhoodFact.trim()) {
-      setError("Preencha título, bairro, cidade, estado e \"o que só quem mora perto sabe\".");
+    // Só o essencial pra publicar bloqueia — o resto (localização, "o que
+    // só quem mora perto sabe", vaga, comodidades...) é complementar e
+    // pode ficar em branco sem travar o cadastro nem a edição de um
+    // imóvel antigo que não tinha esses campos preenchidos.
+    if (!form.title.trim()) {
+      setError("Preencha o título do imóvel.");
+      return;
+    }
+    if (!form.description.trim()) {
+      setError("Preencha a descrição do imóvel.");
+      return;
+    }
+    if (!form.price.trim() || Number(form.price) <= 0) {
+      setError("Preencha o valor do imóvel.");
+      return;
+    }
+    if (form.bedrooms.trim() === "" || form.bathrooms.trim() === "" || form.areaM2.trim() === "") {
+      setError("Preencha quartos, banheiros e área (m²).");
       return;
     }
     if (form.gallery.length === 0) {
-      setError("Adicione pelo menos uma foto antes de salvar.");
+      setError("Adicione a foto de capa e as demais fotos antes de salvar.");
       return;
     }
 
@@ -143,6 +166,8 @@ export function PropertyForm() {
         bedrooms: Number(form.bedrooms) || 0,
         bathrooms: Number(form.bathrooms) || 0,
         parking: Number(form.parking) || 0,
+        hasPool: form.hasPool,
+        hasBarbecue: form.hasBarbecue,
         neighborhoodFact: form.neighborhoodFact.trim(),
         description: form.description
           .split(/\n\s*\n/)
@@ -190,37 +215,42 @@ export function PropertyForm() {
           <Field label="Status">
             <Select value={form.status} onChange={(v) => patch({ status: v as PropertyStatus })} options={["Disponível", "Em negociação"]} />
           </Field>
-          <Field label="Valor (R$)">
+          <Field label="Valor (R$) *">
             <Input name="price" type="number" value={form.price} onChange={(v) => patch({ price: v })} placeholder="480000" />
           </Field>
         </Section>
 
-        <Section title="Localização">
+        <Section title="Localização (opcional)">
           <div className="sm:col-span-2">
             <LocationField value={form} onChange={patch} />
           </div>
         </Section>
 
         <Section title="Características">
-          <Field label="Quartos">
+          <Field label="Quartos *">
             <Input name="bedrooms" type="number" value={form.bedrooms} onChange={(v) => patch({ bedrooms: v })} />
           </Field>
-          <Field label="Banheiros">
+          <Field label="Banheiros *">
             <Input name="bathrooms" type="number" value={form.bathrooms} onChange={(v) => patch({ bathrooms: v })} />
           </Field>
-          <Field label="Vagas">
+          <Field label="Vagas (opcional)">
             <Input name="parking" type="number" value={form.parking} onChange={(v) => patch({ parking: v })} />
           </Field>
-          <Field label="Área (m²)">
+          <Field label="Área em m² *">
             <Input name="areaM2" type="number" value={form.areaM2} onChange={(v) => patch({ areaM2: v })} />
           </Field>
         </Section>
 
+        <Section title="Comodidades (opcional)">
+          <Toggle checked={form.hasPool} onChange={() => patch({ hasPool: !form.hasPool })} label="Piscina" />
+          <Toggle checked={form.hasBarbecue} onChange={() => patch({ hasBarbecue: !form.hasBarbecue })} label="Churrasqueira" />
+        </Section>
+
         <Section title="Descrição">
-          <Field label="Descrição (parágrafos separados por linha em branco)" className="sm:col-span-2">
+          <Field label="Descrição (parágrafos separados por linha em branco) *" className="sm:col-span-2">
             <Textarea name="description" value={form.description} onChange={(v) => patch({ description: v })} rows={6} />
           </Field>
-          <Field label="“O que só quem mora perto sabe”" className="sm:col-span-2">
+          <Field label="“O que só quem mora perto sabe” (opcional)" className="sm:col-span-2">
             <Textarea name="neighborhoodFact" value={form.neighborhoodFact} onChange={(v) => patch({ neighborhoodFact: v })} rows={3} />
           </Field>
         </Section>
@@ -235,16 +265,9 @@ export function PropertyForm() {
         </Section>
 
         <Section title="Visibilidade">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={form.featured}
-            onClick={() => patch({ featured: !form.featured })}
-            className="flex items-center gap-3 [touch-action:manipulation] sm:col-span-2"
-          >
-            <ToggleTrack checked={form.featured} />
-            <span className="font-display text-sm text-grafite">Destacar na página inicial</span>
-          </button>
+          <div className="sm:col-span-2">
+            <Toggle checked={form.featured} onChange={() => patch({ featured: !form.featured })} label="Destacar na página inicial" />
+          </div>
         </Section>
 
         {error && (
@@ -252,6 +275,8 @@ export function PropertyForm() {
             {error}
           </p>
         )}
+
+        <p className="-mt-4 font-display text-[12px] text-grafite-muted">* campo obrigatório</p>
 
         <div className="flex flex-wrap gap-3 border-t border-grafite/8 pt-6">
           <button
@@ -370,21 +395,5 @@ function Select({
         </option>
       ))}
     </select>
-  );
-}
-
-/** Só o visual do interruptor — o clique/estado ficam no <button role="switch">
- *  que envolve isto junto com o texto, pra área de toque única (rótulo + controle). */
-function ToggleTrack({ checked }: { checked: boolean }) {
-  return (
-    <span
-      className={`relative h-[22px] w-[40px] shrink-0 rounded-full transition-colors ${checked ? "bg-azul-escritura" : "bg-grafite/20"}`}
-    >
-      <span
-        className={`absolute top-[3px] h-[16px] w-[16px] rounded-full bg-white shadow transition-transform ${
-          checked ? "translate-x-[20px]" : "translate-x-[3px]"
-        }`}
-      />
-    </span>
   );
 }

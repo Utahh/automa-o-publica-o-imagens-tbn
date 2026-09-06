@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2 } from "lucide-react";
 import { SafeImage } from "../../components/SafeImage";
+import { Toggle } from "../../components/admin/Toggle";
 import { useAllProperties } from "../../hooks/useProperties";
 import { updateProperty, deleteProperty } from "../../lib/adminApi";
 import { formatPrice } from "../../lib/format";
@@ -110,26 +111,12 @@ export function Dashboard() {
                 {p.published ? "Publicado" : "Rascunho"}
               </button>
 
-              <button
-                type="button"
-                onClick={() => toggleFeatured(p)}
+              <Toggle
+                checked={p.featured}
+                onChange={() => toggleFeatured(p)}
                 disabled={busyId === p.id}
-                className="flex w-fit items-center gap-2"
-                aria-pressed={p.featured}
-              >
-                <span
-                  className={`relative h-[19px] w-[34px] shrink-0 rounded-full transition-colors ${
-                    p.featured ? "bg-azul-escritura" : "bg-grafite/20"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-[2px] h-[15px] w-[15px] rounded-full bg-white shadow transition-transform ${
-                      p.featured ? "translate-x-[17px]" : "translate-x-[2px]"
-                    }`}
-                  />
-                </span>
-                <span className="font-display text-[12px] text-grafite-muted">Destaque</span>
-              </button>
+                label="Destaque"
+              />
 
               <div className="flex items-center justify-end gap-1.5">
                 <Link

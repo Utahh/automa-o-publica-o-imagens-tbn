@@ -41,12 +41,15 @@ export function PropertyCard({ property, index = 0 }: { property: Property; inde
             <h3 className="line-clamp-2 text-balance font-display text-[17px] font-semibold leading-snug tracking-tight text-grafite">
               {property.title}
             </h3>
-            <p className="mt-1 flex items-center gap-1.5 truncate font-display text-[13px] text-grafite-muted">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-azul-escritura" strokeWidth={2.2} aria-hidden="true" />
-              <span className="truncate">
-                {property.neighborhood}, {property.city} · {property.state}
-              </span>
-            </p>
+            {(property.neighborhood || property.city) && (
+              <p className="mt-1 flex items-center gap-1.5 truncate font-display text-[13px] text-grafite-muted">
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-azul-escritura" strokeWidth={2.2} aria-hidden="true" />
+                <span className="truncate">
+                  {[property.neighborhood, property.city].filter(Boolean).join(", ")}
+                  {property.state ? ` · ${property.state}` : ""}
+                </span>
+              </p>
+            )}
           </div>
 
           <p className="font-mono-tabular font-mono text-xl font-semibold text-azul-escritura">

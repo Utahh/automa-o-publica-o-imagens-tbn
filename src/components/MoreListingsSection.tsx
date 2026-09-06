@@ -116,9 +116,11 @@ function CarouselCard({ property }: { property: Property }) {
       </span>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-grafite-noite/95 via-grafite-noite/55 to-transparent px-4 pb-4 pt-12">
-        <p className="truncate font-display text-[12.5px] text-papel-muted">
-          {property.neighborhood}, {property.city}
-        </p>
+        {(property.neighborhood || property.city) && (
+          <p className="truncate font-display text-[12.5px] text-papel-muted">
+            {[property.neighborhood, property.city].filter(Boolean).join(", ")}
+          </p>
+        )}
         <p className="mt-0.5 font-mono-tabular font-mono text-[17px] font-semibold text-cinza-papel">
           {formatPrice(property.price, property.dealType)}
         </p>

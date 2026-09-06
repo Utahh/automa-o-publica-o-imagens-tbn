@@ -44,6 +44,9 @@ export interface Property {
   bedrooms: number;
   bathrooms: number;
   parking: number;
+  /** Comodidades — opcionais, ausentes em imóveis cadastrados antes delas existirem (tratar como false). */
+  hasPool?: boolean;
+  hasBarbecue?: boolean;
   featured: boolean;
   /** informação de bairro que só o corretor saberia — regra do checklist de marca */
   neighborhoodFact: string;

@@ -1,5 +1,5 @@
 import { Link, Navigate, useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Flame, Waves } from "lucide-react";
 import { Gallery } from "../components/Gallery";
 import { SpecRow } from "../components/SpecRow";
 import { LocationCard } from "../components/LocationCard";
@@ -58,9 +58,12 @@ export function PropertyDetail() {
                   <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight text-grafite sm:text-3xl">
                     {property.title}
                   </h1>
-                  <p className="mt-1.5 font-display text-[15px] text-grafite-muted">
-                    {property.neighborhood}, {property.city} · {property.state}
-                  </p>
+                  {(property.neighborhood || property.city) && (
+                    <p className="mt-1.5 font-display text-[15px] text-grafite-muted">
+                      {[property.neighborhood, property.city].filter(Boolean).join(", ")}
+                      {property.state ? ` · ${property.state}` : ""}
+                    </p>
+                  )}
                   <p className="mt-1 font-mono text-[11px] text-grafite-muted/70">Código {property.code}</p>
                 </div>
                 <p className="font-mono-tabular font-mono text-2xl font-semibold text-azul-escritura sm:text-3xl">
@@ -69,6 +72,23 @@ export function PropertyDetail() {
               </div>
 
               <SpecRow property={property} className="mt-6 border-y border-grafite/8 py-5" />
+
+              {(property.hasPool || property.hasBarbecue) && (
+                <div className="mt-5 flex flex-wrap gap-2.5">
+                  {property.hasPool && (
+                    <span className="flex items-center gap-1.5 rounded-full bg-azul-escritura/10 px-3 py-1.5 font-display text-[13px] font-medium text-azul-escritura">
+                      <Waves className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
+                      Piscina
+                    </span>
+                  )}
+                  {property.hasBarbecue && (
+                    <span className="flex items-center gap-1.5 rounded-full bg-azul-escritura/10 px-3 py-1.5 font-display text-[13px] font-medium text-azul-escritura">
+                      <Flame className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
+                      Churrasqueira
+                    </span>
+                  )}
+                </div>
+              )}
 
               <div className="mt-6 space-y-4">
                 {property.description.map((paragraph, i) => (
