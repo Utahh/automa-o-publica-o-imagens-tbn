@@ -1,20 +1,40 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { BrandMark } from "../../components/BrandMark";
 import { HeroSymbol } from "../../components/HeroSymbol";
 import { useAuth } from "../../hooks/useAuth";
 
+// Web Client ID do provedor Google já configurado no Firebase Auth deste
+// projeto (não é segredo — client ID é público por natureza no OAuth do
+// Google, é o client SECRET que nunca aparece aqui).
+const GOOGLE_CLIENT_ID = "442425683386-3g7or2jg9eo0u5oi04m2h497fhove86l.apps.googleusercontent.com";
+
+interface GoogleCredentialResponse {
+  credential: string;
+}
+interface GoogleGIS {
+  accounts: {
+    id: {
+      initialize: (config: {
+        client_id: string;
+        callback: (response: GoogleCredentialResponse) => void;
+      }) => void;
+      renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
+    };
+  };
+}
+
 export function Login() {
-  const { user, isAdmin, loading, googleError, signIn, signInWithGoogle, signOut } = useAuth();
+  const { user, isAdmin, loading, googleError, signIn, signInWithGoogleIdToken, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const reduceMotion = useReducedMotion();
+  const googleButtonRef = useRef<HTMLDivElement>(null);
   const displayError = error || googleError;
 
   const state = location.state as { from?: { pathname?: string }; denied?: boolean } | null;
@@ -27,6 +47,53 @@ export function Login() {
       setError("Essa conta não tem acesso ao painel de cadastro.");
     }
   }, [state?.denied, user, signOut]);
+
+  // Google Identity Services: o botão é desenhado pelo próprio script do
+  // Google direto nesta página — não depende de pop-up nem de cookie
+  // entre o domínio do site e o do Firebase, ao contrário de
+  // signInWithPopup/signInWithRedirect (que falhavam em silêncio com
+  // cookie de terceiros bloqueado, cada vez mais o padrão no Chrome).
+  useEffect(() => {
+    let cancelled = false;
+
+    function tryRender() {
+      if (cancelled) return;
+      const google = (window as unknown as { google?: GoogleGIS }).google;
+      if (!google?.accounts?.id) {
+        setTimeout(tryRender, 100);
+        return;
+      }
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (response) => {
+          setError(null);
+          try {
+            await signInWithGoogleIdToken(response.credential);
+            navigate("/admin", { replace: true });
+          } catch {
+            // erro específico já fica em googleError (useAuth)
+          }
+        },
+      });
+      if (googleButtonRef.current) {
+        google.accounts.id.renderButton(googleButtonRef.current, {
+          type: "standard",
+          theme: "outline",
+          size: "large",
+          shape: "pill",
+          text: "continue_with",
+          logo_alignment: "center",
+          width: 320,
+        });
+      }
+    }
+
+    tryRender();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!loading && user && isAdmin) {
     return <Navigate to={state?.from?.pathname || "/admin"} replace />;
@@ -43,20 +110,6 @@ export function Login() {
       setError("E-mail ou senha incorretos.");
     } finally {
       setSubmitting(false);
-    }
-  }
-
-  async function handleGoogle() {
-    setError(null);
-    setGoogleSubmitting(true);
-    try {
-      // Navega pro Google e volta — se der certo, a sessão aparece via
-      // onAuthStateChanged depois do redirect de volta (ver useAuth), não
-      // como retorno desta chamada.
-      await signInWithGoogle();
-    } catch {
-      setError("Não deu pra entrar com o Google. Tente de novo.");
-      setGoogleSubmitting(false);
     }
   }
 
@@ -121,17 +174,7 @@ export function Login() {
           </p>
         )}
 
-        <motion.button
-          type="button"
-          onClick={handleGoogle}
-          disabled={googleSubmitting}
-          whileHover={{ y: -1 }}
-          whileTap={{ scale: 0.98 }}
-          className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-xl border border-grafite/15 py-3 font-display text-sm font-semibold text-grafite [touch-action:manipulation] transition-colors hover:bg-grafite/5 disabled:opacity-60"
-        >
-          <GoogleIcon className="h-4 w-4" />
-          {googleSubmitting ? "Entrando…" : "Entrar com o Google"}
-        </motion.button>
+        <div className="mt-6 flex justify-center" ref={googleButtonRef} />
 
         <div className="my-5 flex items-center gap-3">
           <span className="h-px flex-1 bg-grafite/10" />
@@ -185,16 +228,5 @@ export function Login() {
         </form>
       </motion.div>
     </div>
-  );
-}
-
-function GoogleIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
-      <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z" />
-      <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z" />
-      <path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z" />
-      <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z" />
-    </svg>
   );
 }
