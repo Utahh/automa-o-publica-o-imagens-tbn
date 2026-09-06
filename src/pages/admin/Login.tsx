@@ -1,32 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { BrandMark } from "../../components/BrandMark";
 import { HeroSymbol } from "../../components/HeroSymbol";
 import { useAuth } from "../../hooks/useAuth";
 
-// Web Client ID do provedor Google já configurado no Firebase Auth deste
-// projeto (não é segredo — client ID é público por natureza no OAuth do
-// Google, é o client SECRET que nunca aparece aqui).
-const GOOGLE_CLIENT_ID = "442425683386-3g7or2jg9eo0u5oi04m2h497fhove86l.apps.googleusercontent.com";
-
-interface GoogleCredentialResponse {
-  credential: string;
-}
-interface GoogleGIS {
-  accounts: {
-    id: {
-      initialize: (config: {
-        client_id: string;
-        callback: (response: GoogleCredentialResponse) => void;
-      }) => void;
-      renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
-    };
-  };
-}
-
 export function Login() {
-  const { user, isAdmin, loading, googleError, signIn, signInWithGoogleIdToken, signOut } = useAuth();
+  const { user, isAdmin, loading, signIn, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
@@ -34,66 +14,17 @@ export function Login() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const reduceMotion = useReducedMotion();
-  const googleButtonRef = useRef<HTMLDivElement>(null);
-  const displayError = error || googleError;
 
   const state = location.state as { from?: { pathname?: string }; denied?: boolean } | null;
 
-  // Alguém autenticou (e-mail/senha ou Google) mas não tem acesso ao
-  // painel — desloga pra não ficar preso numa sessão sem claim, e avisa.
+  // Alguém autenticou mas não tem acesso ao painel — desloga pra não
+  // ficar preso numa sessão sem claim, e avisa.
   useEffect(() => {
     if (state?.denied && user) {
       signOut();
       setError("Essa conta não tem acesso ao painel de cadastro.");
     }
   }, [state?.denied, user, signOut]);
-
-  // Google Identity Services: o botão é desenhado pelo próprio script do
-  // Google direto nesta página — não depende de pop-up nem de cookie
-  // entre o domínio do site e o do Firebase, ao contrário de
-  // signInWithPopup/signInWithRedirect (que falhavam em silêncio com
-  // cookie de terceiros bloqueado, cada vez mais o padrão no Chrome).
-  useEffect(() => {
-    let cancelled = false;
-
-    function tryRender() {
-      if (cancelled) return;
-      const google = (window as unknown as { google?: GoogleGIS }).google;
-      if (!google?.accounts?.id) {
-        setTimeout(tryRender, 100);
-        return;
-      }
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: async (response) => {
-          setError(null);
-          try {
-            await signInWithGoogleIdToken(response.credential);
-            navigate("/admin", { replace: true });
-          } catch {
-            // erro específico já fica em googleError (useAuth)
-          }
-        },
-      });
-      if (googleButtonRef.current) {
-        google.accounts.id.renderButton(googleButtonRef.current, {
-          type: "standard",
-          theme: "outline",
-          size: "large",
-          shape: "pill",
-          text: "continue_with",
-          logo_alignment: "center",
-          width: 320,
-        });
-      }
-    }
-
-    tryRender();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   if (!loading && user && isAdmin) {
     return <Navigate to={state?.from?.pathname || "/admin"} replace />;
@@ -168,21 +99,13 @@ export function Login() {
         <h1 className="mt-5 text-balance font-display text-xl font-semibold text-grafite">Painel de cadastro</h1>
         <p className="mt-1 font-display text-sm text-grafite-muted">Acesso restrito ao corretor e à administração.</p>
 
-        {displayError && (
+        {error && (
           <p aria-live="polite" className="mt-4 font-display text-[13px] text-amber-700">
-            {displayError}
+            {error}
           </p>
         )}
 
-        <div className="mt-6 flex justify-center" ref={googleButtonRef} />
-
-        <div className="my-5 flex items-center gap-3">
-          <span className="h-px flex-1 bg-grafite/10" />
-          <span className="font-mono text-[10.5px] uppercase tracking-[0.15em] text-grafite-muted">ou</span>
-          <span className="h-px flex-1 bg-grafite/10" />
-        </div>
-
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="mt-6">
           <label className="flex flex-col gap-1.5">
             <span className="font-mono text-[11px] font-medium uppercase tracking-[0.15em] text-grafite-muted">
               E-mail

@@ -12,6 +12,23 @@ só o `GUIA-CORRETOR.md`.
 > tudo. Se precisar consultar como funcionava, o código e os docs
 > antigos continuam no histórico do Git (`git log --all -- scripts/sync-drive.mjs`).
 
+> **Login com conta do Google — desativado por enquanto**: tentamos três
+> abordagens (`signInWithPopup`, `signInWithRedirect`, Google Identity
+> Services) e todas esbarraram em bloqueios de navegador ou configuração
+> — a última travou no erro *"The given origin is not allowed for the
+> given client ID"*, porque o Client ID OAuth que o Firebase criou pro
+> provedor Google só tem `tbn-imoveis-site.firebaseapp.com` (não o
+> domínio da Vercel) como origem autorizada no Google Cloud Console, e
+> essa lista é separada da lista de domínios autorizados do Firebase Auth.
+> Pra reativar: em
+> [console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
+> (projeto `tbn-imoveis-site`), abrir o Client ID Web auto-criado pelo
+> Firebase e adicionar `https://toninho-bomnome.vercel.app` em
+> "Origens JavaScript autorizadas" — só então valeria a pena reconectar o
+> botão de Google (código removido do painel, mas simples de refazer:
+> ver `git log --all --oneline -- src/pages/admin/Login.tsx` pelos
+> commits com "Google" na mensagem). Por ora, o painel usa só e-mail/senha.
+
 ## Visão geral
 
 ```
