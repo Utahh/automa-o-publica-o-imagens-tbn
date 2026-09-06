@@ -1,3 +1,4 @@
+import { useId } from "react";
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
 import clsx from "clsx";
@@ -19,6 +20,11 @@ interface Option {
  * pequenas, o menu podia abrir parcialmente fora da tela) por um listbox
  * acessível com posicionamento consciente da viewport (nunca sai da tela)
  * e visual consistente com a marca em qualquer navegador.
+ *
+ * O rótulo é um <span id=...> + aria-labelledby no gatilho, não um <label>
+ * envolvendo tudo — um <label> nativo reenvia clique pro único controle de
+ * formulário lá dentro, e isso duplicava o clique no gatilho (abria e
+ * fechava de novo no mesmo toque).
  */
 export function FilterSelect({
   label,
@@ -35,18 +41,23 @@ export function FilterSelect({
   placeholder: string;
   triggerClassName?: string;
 }) {
+  const labelId = useId();
   const normalized: Option[] = options.map((opt) => (typeof opt === "string" ? { value: opt, label: opt } : opt));
 
   return (
-    <label className="flex flex-1 flex-col gap-1">
-      <span className="whitespace-nowrap font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-grafite-muted">
+    <div className="flex flex-1 flex-col gap-1">
+      <span id={labelId} className="whitespace-nowrap font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-grafite-muted">
         {label}
       </span>
       <Select.Root value={value || ALL_VALUE} onValueChange={(v) => onChange(v === ALL_VALUE ? "" : v)}>
         <Select.Trigger
-          aria-label={label}
+          aria-labelledby={labelId}
           className={clsx(
-            "flex w-full items-center justify-between gap-2 rounded-lg bg-transparent text-left font-display text-[14.5px] font-semibold text-grafite outline-none [touch-action:manipulation] focus-visible:ring-2 focus-visible:ring-azul-sinal focus-visible:ring-offset-2 data-[placeholder]:font-medium data-[placeholder]:text-grafite-muted",
+            // Select.Value não aceita className diretamente (Radix ignora),
+            // então o truncamento é aplicado aqui via seletor de filho —
+            // min-w-0 no span é o que permite ele encolher e reticenciar
+            // em vez de quebrar linha dentro do flex.
+            "flex w-full min-w-0 items-center justify-between gap-2 rounded-lg bg-transparent text-left font-display text-[14.5px] font-semibold text-grafite outline-none [touch-action:manipulation] [&>span]:min-w-0 [&>span]:flex-1 [&>span]:truncate focus-visible:ring-2 focus-visible:ring-azul-sinal focus-visible:ring-offset-2 data-[placeholder]:font-medium data-[placeholder]:text-grafite-muted",
             triggerClassName,
           )}
         >
@@ -74,7 +85,7 @@ export function FilterSelect({
           </Select.Content>
         </Select.Portal>
       </Select.Root>
-    </label>
+    </div>
   );
 }
 
