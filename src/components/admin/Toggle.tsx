@@ -1,8 +1,10 @@
 /** Interruptor on/off reutilizado no painel (destaque, comodidades...).
- *  O "conhecinho" (knob) tem uma posição base explícita (left-[3px]) em vez
- *  de depender só do transform pra se posicionar — sem isso, sem um `left`
- *  definido, o navegador podia calcular a posição de repouso errado e o
- *  conhecinho aparecia deslocado pra fora da trilha. */
+ *  Redesenhado pra usar flexbox puro (justify-content) em vez de
+ *  posição absoluta + transform — a versão anterior calculava a
+ *  posição de repouso do "conhecinho" a partir do transform sem um
+ *  `left` de verdade, e em alguns navegadores ele aparecia fora da
+ *  trilha. Com flex, o filho nunca sai da caixa do pai: é a própria
+ *  disposição do layout, não um cálculo de posição. */
 export function Toggle({
   checked,
   onChange,
@@ -24,15 +26,11 @@ export function Toggle({
       className="flex items-center gap-3 [touch-action:manipulation] disabled:opacity-60"
     >
       <span
-        className={`relative h-[22px] w-[40px] shrink-0 rounded-full transition-colors ${
-          checked ? "bg-azul-escritura" : "bg-grafite/20"
+        className={`flex h-[22px] w-[40px] shrink-0 items-center rounded-full p-[3px] transition-colors duration-200 ${
+          checked ? "justify-end bg-azul-escritura" : "justify-start bg-grafite/20"
         }`}
       >
-        <span
-          className={`absolute left-[3px] top-[3px] h-[16px] w-[16px] rounded-full bg-white shadow transition-transform ${
-            checked ? "translate-x-[18px]" : "translate-x-0"
-          }`}
-        />
+        <span className="h-[16px] w-[16px] shrink-0 rounded-full bg-white shadow" />
       </span>
       {label && <span className="font-display text-sm text-grafite">{label}</span>}
     </button>
