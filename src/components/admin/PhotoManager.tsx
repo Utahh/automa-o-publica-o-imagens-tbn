@@ -125,8 +125,10 @@ export function PhotoManager({
             key={item.key}
             className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-grafite/20 text-grafite-muted"
           >
-            <Loader2 className="h-5 w-5 animate-spin" />
-            <span className="font-mono text-[11px]">{item.progress}%</span>
+            <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" />
+            <span aria-live="polite" className="font-mono text-[11px]">
+              {item.progress}%
+            </span>
           </div>
         ))}
 
@@ -143,6 +145,7 @@ export function PhotoManager({
       <input
         ref={inputRef}
         type="file"
+        name="photos"
         accept="image/*"
         multiple
         hidden
@@ -152,7 +155,11 @@ export function PhotoManager({
         }}
       />
 
-      {error && <p className="mt-2 font-display text-[13px] text-amber-700">{error}</p>}
+      {error && (
+        <p aria-live="polite" className="mt-2 font-display text-[13px] text-amber-700">
+          {error}
+        </p>
+      )}
       <p className="mt-2 font-display text-[12px] text-grafite-muted">
         Até 15 MB por foto. A primeira da lista aparece na home e na listagem de imóveis.
       </p>

@@ -85,6 +85,7 @@ export function PropertyForm() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     if (isNew || !id) return;
@@ -94,8 +95,21 @@ export function PropertyForm() {
     });
   }, [isNew, id]);
 
+  // Avisa antes de fechar/recarregar a aba com edições não salvas — fotos já
+  // subiram pro Cloudinary, perder o formulário nesse ponto é bem frustrante.
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (!dirty) return;
+      e.preventDefault();
+      e.returnValue = "";
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [dirty]);
+
   function patch(fields: Partial<FormState>) {
     setForm((f) => ({ ...f, ...fields }));
+    setDirty(true);
   }
 
   async function handleSubmit(publish: boolean) {
@@ -145,7 +159,8 @@ export function PropertyForm() {
       } else if (id) {
         await updateProperty(id, payload);
       }
-      patch({ published: publish });
+      setForm((f) => ({ ...f, published: publish }));
+      setDirty(false);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -157,14 +172,14 @@ export function PropertyForm() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="font-display text-2xl font-semibold text-grafite">
+      <h1 className="text-balance font-display text-2xl font-semibold text-grafite">
         {isNew ? "Novo imóvel" : `Editar imóvel — ${form.title}`}
       </h1>
 
       <div className="mt-6 space-y-8 rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(15,18,20,0.06)] ring-1 ring-grafite/5 sm:p-8">
         <Section title="Dados básicos">
           <Field label="Título" className="sm:col-span-2">
-            <Input value={form.title} onChange={(v) => patch({ title: v })} placeholder="Casa térrea com fachada em pedra" />
+            <Input name="title" value={form.title} onChange={(v) => patch({ title: v })} placeholder="Casa térrea com fachada em pedra" />
           </Field>
           <Field label="Tipo">
             <Select value={form.type} onChange={(v) => patch({ type: v as PropertyType })} options={PROPERTY_TYPES} />
@@ -176,7 +191,7 @@ export function PropertyForm() {
             <Select value={form.status} onChange={(v) => patch({ status: v as PropertyStatus })} options={["Disponível", "Em negociação"]} />
           </Field>
           <Field label="Valor (R$)">
-            <Input type="number" value={form.price} onChange={(v) => patch({ price: v })} placeholder="480000" />
+            <Input name="price" type="number" value={form.price} onChange={(v) => patch({ price: v })} placeholder="480000" />
           </Field>
         </Section>
 
@@ -188,25 +203,25 @@ export function PropertyForm() {
 
         <Section title="Características">
           <Field label="Quartos">
-            <Input type="number" value={form.bedrooms} onChange={(v) => patch({ bedrooms: v })} />
+            <Input name="bedrooms" type="number" value={form.bedrooms} onChange={(v) => patch({ bedrooms: v })} />
           </Field>
           <Field label="Banheiros">
-            <Input type="number" value={form.bathrooms} onChange={(v) => patch({ bathrooms: v })} />
+            <Input name="bathrooms" type="number" value={form.bathrooms} onChange={(v) => patch({ bathrooms: v })} />
           </Field>
           <Field label="Vagas">
-            <Input type="number" value={form.parking} onChange={(v) => patch({ parking: v })} />
+            <Input name="parking" type="number" value={form.parking} onChange={(v) => patch({ parking: v })} />
           </Field>
           <Field label="Área (m²)">
-            <Input type="number" value={form.areaM2} onChange={(v) => patch({ areaM2: v })} />
+            <Input name="areaM2" type="number" value={form.areaM2} onChange={(v) => patch({ areaM2: v })} />
           </Field>
         </Section>
 
         <Section title="Descrição">
           <Field label="Descrição (parágrafos separados por linha em branco)" className="sm:col-span-2">
-            <Textarea value={form.description} onChange={(v) => patch({ description: v })} rows={6} />
+            <Textarea name="description" value={form.description} onChange={(v) => patch({ description: v })} rows={6} />
           </Field>
           <Field label='"O que só quem mora perto sabe"' className="sm:col-span-2">
-            <Textarea value={form.neighborhoodFact} onChange={(v) => patch({ neighborhoodFact: v })} rows={3} />
+            <Textarea name="neighborhoodFact" value={form.neighborhoodFact} onChange={(v) => patch({ neighborhoodFact: v })} rows={3} />
           </Field>
         </Section>
 
@@ -220,13 +235,23 @@ export function PropertyForm() {
         </Section>
 
         <Section title="Visibilidade">
-          <label className="flex items-center gap-3 sm:col-span-2">
-            <Toggle checked={form.featured} onChange={(v) => patch({ featured: v })} />
+          <button
+            type="button"
+            role="switch"
+            aria-checked={form.featured}
+            onClick={() => patch({ featured: !form.featured })}
+            className="flex items-center gap-3 [touch-action:manipulation] sm:col-span-2"
+          >
+            <ToggleTrack checked={form.featured} />
             <span className="font-display text-sm text-grafite">Destacar na página inicial</span>
-          </label>
+          </button>
         </Section>
 
-        {error && <p className="font-display text-[13.5px] text-amber-700">{error}</p>}
+        {error && (
+          <p aria-live="polite" className="font-display text-[13.5px] text-amber-700">
+            {error}
+          </p>
+        )}
 
         <div className="flex flex-wrap gap-3 border-t border-grafite/8 pt-6">
           <button
@@ -274,40 +299,70 @@ function Input({
   onChange,
   type = "text",
   placeholder,
+  name,
+  inputMode,
 }: {
   value: string;
   onChange: (v: string) => void;
   type?: string;
   placeholder?: string;
+  name?: string;
+  inputMode?: "text" | "numeric" | "decimal";
 }) {
   return (
     <input
       type={type}
+      name={name}
+      inputMode={inputMode ?? (type === "number" ? "numeric" : undefined)}
+      autoComplete="off"
+      spellCheck={false}
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-xl border border-grafite/15 bg-white px-3.5 py-2.5 font-display text-sm text-grafite outline-none focus:border-azul-escritura"
+      className="w-full rounded-xl border border-grafite/15 bg-white px-3.5 py-2.5 font-display text-sm text-grafite transition-colors focus:border-azul-escritura"
     />
   );
 }
 
-function Textarea({ value, onChange, rows }: { value: string; onChange: (v: string) => void; rows: number }) {
+function Textarea({
+  value,
+  onChange,
+  rows,
+  name,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  rows: number;
+  name?: string;
+}) {
   return (
     <textarea
       value={value}
+      name={name}
       rows={rows}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full resize-y rounded-xl border border-grafite/15 bg-white px-3.5 py-2.5 font-display text-sm text-grafite outline-none focus:border-azul-escritura"
+      className="w-full resize-y rounded-xl border border-grafite/15 bg-white px-3.5 py-2.5 font-display text-sm text-grafite transition-colors focus:border-azul-escritura"
     />
   );
 }
 
-function Select({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
+function Select({
+  value,
+  onChange,
+  options,
+  name,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  name?: string;
+}) {
   return (
     <select
       value={value}
+      name={name}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-xl border border-grafite/15 bg-white px-3.5 py-2.5 font-display text-sm text-grafite outline-none focus:border-azul-escritura"
+      className="w-full rounded-xl border border-grafite/15 bg-white px-3.5 py-2.5 font-display text-sm text-grafite transition-colors focus:border-azul-escritura"
     >
       {options.map((opt) => (
         <option key={opt} value={opt}>
@@ -318,12 +373,11 @@ function Select({ value, onChange, options }: { value: string; onChange: (v: str
   );
 }
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+/** Só o visual do interruptor — o clique/estado ficam no <button role="switch">
+ *  que envolve isto junto com o texto, pra área de toque única (rótulo + controle). */
+function ToggleTrack({ checked }: { checked: boolean }) {
   return (
-    <button
-      type="button"
-      onClick={() => onChange(!checked)}
-      aria-pressed={checked}
+    <span
       className={`relative h-[22px] w-[40px] shrink-0 rounded-full transition-colors ${checked ? "bg-azul-escritura" : "bg-grafite/20"}`}
     >
       <span
@@ -331,6 +385,6 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
           checked ? "translate-x-[20px]" : "translate-x-[3px]"
         }`}
       />
-    </button>
+    </span>
   );
 }

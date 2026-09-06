@@ -42,7 +42,7 @@ export function VideoUploader({
             onClick={() => onChange("")}
             className="flex items-center gap-1.5 font-display text-[13px] font-medium text-amber-700"
           >
-            <Trash2 className="h-3.5 w-3.5" /> Remover
+            <Trash2 aria-hidden="true" className="h-3.5 w-3.5" /> Remover
           </button>
         </div>
       </div>
@@ -59,12 +59,14 @@ export function VideoUploader({
       >
         {progress !== null ? (
           <>
-            <Loader2 className="h-5 w-5 animate-spin" />
-            <span className="font-mono text-[12px]">{progress}%</span>
+            <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" />
+            <span aria-live="polite" className="font-mono text-[12px]">
+              {progress}%
+            </span>
           </>
         ) : (
           <>
-            <Video className="h-5 w-5" />
+            <Video aria-hidden="true" className="h-5 w-5" />
             <span className="font-display text-[13px] font-medium">Adicionar vídeo (opcional)</span>
           </>
         )}
@@ -72,6 +74,7 @@ export function VideoUploader({
       <input
         ref={inputRef}
         type="file"
+        name="video"
         accept="video/*"
         hidden
         onChange={(e) => {
@@ -79,7 +82,11 @@ export function VideoUploader({
           e.target.value = "";
         }}
       />
-      {error && <p className="mt-2 font-display text-[13px] text-amber-700">{error}</p>}
+      {error && (
+        <p aria-live="polite" className="mt-2 font-display text-[13px] text-amber-700">
+          {error}
+        </p>
+      )}
       <p className="mt-2 font-display text-[12px] text-grafite-muted">Até {MAX_VIDEO_SIZE_MB} MB.</p>
     </div>
   );
