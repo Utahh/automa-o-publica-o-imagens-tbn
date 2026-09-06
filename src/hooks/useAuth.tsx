@@ -29,6 +29,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (u) => {
+      // loading volta a true enquanto confere a claim — sem isso, entre
+      // "usuário logou" e "claim conferida" existia uma janela com
+      // loading=false, user preenchido e isAdmin ainda com o valor
+      // antigo (false), e o RequireAdmin lia isso como "não é admin" e
+      // deslogava na hora, antes da checagem real terminar.
+      setLoading(true);
       setUser(u);
       if (u) {
         // força buscar o token de novo (não usar o cache local) — sem
