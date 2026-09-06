@@ -2,10 +2,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Imóveis: leitura pública só do que está publicado; rascunhos só
-    // ficam visíveis pra quem está logado no painel (Cauan/Toninho).
-    // Escrita continua só via Admin SDK (funções serverless em api/).
+    // ficam visíveis pra quem tem a custom claim de admin (Cauan/Toninho
+    // — concedida via `npm run set-admin-claims`, ver ARQUITETURA.md).
+    // Não basta `request.auth != null`: com login por conta do Google
+    // liberado pra qualquer pessoa, isso deixaria qualquer conta do
+    // Google ler rascunho. Escrita continua só via Admin SDK (funções
+    // serverless em api/).
     match /imoveis/{docId} {
-      allow read: if resource.data.published == true || request.auth != null;
+      allow read: if resource.data.published == true
+        || (request.auth != null && request.auth.token.admin == true);
       allow write: if false;
     }
 

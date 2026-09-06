@@ -31,20 +31,28 @@ só o `GUIA-CORRETOR.md`.
                                              Site (React) lê ao vivo
 ```
 
-- **Autenticação**: Firebase Auth (e-mail/senha), só duas contas — Cauan
-  e o corretor Toninho. É o mesmo Firebase que já hospeda o Firestore,
-  sem custo adicional.
+- **Autenticação**: Firebase Auth, só duas contas — Cauan e o corretor
+  Toninho —, cada uma podendo entrar com e-mail/senha ou com a conta do
+  Google. É o mesmo Firebase que já hospeda o Firestore, sem custo
+  adicional. Como o provedor do Google aceita **qualquer** conta do
+  Google (não só as duas autorizadas), quem realmente marca "essa conta
+  pode usar o painel" é uma *custom claim* (`admin: true`), concedida
+  uma vez via `npm run set-admin-claims` (ver Setup) — sem ela, a pessoa
+  até consegue autenticar, mas não enxerga nada além da tela de login.
 - **Escrita**: as regras do Firestore negam escrita de **qualquer**
   cliente (`allow write: if false` em `firestore.rules`) — só o Admin
   SDK grava, e só as funções em `api/properties/` usam o Admin SDK. Cada
   função confere o token do Firebase Auth de quem chamou e recusa quem
   não estiver na lista `ALLOWED_ADMIN_EMAILS` (ver `api/_lib/auth.mjs`).
   Essa checagem de e-mail — não a tela de login — é o limite de
-  segurança real.
+  segurança real, e não depende da custom claim (funciona mesmo se
+  alguém esquecer de rodar `set-admin-claims`).
 - **Leitura**: pública pra quem está `published: true`; um rascunho só é
-  lido por quem estiver autenticado (`request.auth != null`) — protege
-  imóvel incompleto/com preço não decidido de aparecer numa consulta
-  direta ao Firestore por alguém de fora.
+  lido por quem tem a custom claim `admin: true`
+  (`request.auth.token.admin == true`) — protege imóvel incompleto/com
+  preço não decidido de aparecer numa consulta direta ao Firestore por
+  alguém de fora, inclusive por qualquer conta aleatória do Google que
+  só passou pela tela de login.
 - **Fotos e vídeo**: o navegador sobe **direto pro Cloudinary**, sem
   passar pelo servidor — usando um *upload preset unsigned* (configurado
   uma vez no Dashboard do Cloudinary, ver Setup abaixo) que já limita
@@ -69,7 +77,8 @@ só o `GUIA-CORRETOR.md`.
 | **Vercel Functions** em vez de Firebase Cloud Functions | Cloud Functions (2ª geração) também exigem o plano pago Blaze. Vercel Functions rodam no plano Hobby (grátis) sem cartão, e o projeto já está hospedado lá. |
 | **Upload direto do navegador pro Cloudinary** em vez de rotear pela função serverless | Evita o limite de tamanho de payload das funções e dispensa reimplementar no servidor o que o preset do Cloudinary já faz na entrada (limitar largura, `quality:auto`, `format:auto`). A API secret nunca sai do servidor — só o `cloud_name` e o nome do preset aparecem no cliente, e isso não é segredo (é assim que upload unsigned sempre funciona). |
 | **Regras do Firestore continuam `write: if false`** | Preserva a decisão de segurança já existente (só Admin SDK escreve) em vez de afrouxar pra "qualquer usuário autenticado" — a superfície de ataque fica menor: mesmo que alguém descubra um jeito de se autenticar, ainda precisa estar na lista `ALLOWED_ADMIN_EMAILS` checada no servidor. |
-| **Rascunho vira invisível pra quem não está logado** (`published == true \|\| request.auth != null`) | Antes, toda a coleção era de leitura pública — aceitável quando só existia "publicado", mas um rascunho (preço não decidido, fotos incompletas) não deveria vazar numa consulta direta ao Firestore por fora do site. |
+| **Rascunho vira invisível pra quem não tem a custom claim de admin** | Antes, toda a coleção era de leitura pública — aceitável quando só existia "publicado", mas um rascunho não deveria vazar numa consulta direta ao Firestore. Checar só `request.auth != null` deixaria de proteger isso assim que o login por Google foi liberado (qualquer conta do Google autentica) — por isso a claim. |
+| **Login por Google além de e-mail/senha** | Pedido explícito: menos fricção pro corretor (não precisa lembrar mais uma senha). O trade-off é que o provedor do Google não tem como restringir "só estas 2 contas" no próprio Firebase (não é um domínio corporativo comum) — resolvido com a custom claim em vez de tentar restringir no provedor. |
 | **Reordenação de foto por botões, não arrastar** | HTML5 drag-and-drop nativo não funciona em touch (celular/tablet), e o corretor provavelmente cadastra pelo celular. Setas de mover + "definir como capa" funcionam em qualquer dispositivo, sem dependência nova. |
 | **Vídeo por upload de arquivo, não link externo** | Decisão do corretor/Cauan: mais simples pro corretor (não precisa hospedar em outro lugar), ao custo de consumir a cota do Cloudinary mais rápido — por isso o teto de 100 MB por vídeo. |
 | **Cloudinary** em vez de Firebase Storage | Firebase Storage exige o plano pago Blaze (cartão) mesmo dentro da cota grátis, desde fev/2026. Cloudinary tem plano grátis real (sem cartão), com upload unsigned e otimização de imagem/vídeo embutida. |
@@ -112,14 +121,23 @@ Isso é feito **uma única vez**. Depois disso, o dia a dia é só seguir o
    consumir menos da cota grátis. Se não quiser complicar, o mesmo preset
    do passo 3 funciona pros dois tipos de arquivo.
 
-### 2. Firebase Auth — habilitar e criar as 2 contas
+### 2. Firebase Auth — habilitar login e criar as 2 contas
 
 1. No [console do Firebase](https://console.firebase.google.com/), projeto
    `tbn-imoveis-site` → **Authentication** → **Sign-in method** → habilite
-   **E-mail/senha**.
-2. Em **Users**, clique **Add user** e crie uma conta pro Cauan e outra
-   pro Toninho (e-mail + senha). Guarde os e-mails — eles vão pra
-   variável `ALLOWED_ADMIN_EMAILS` no passo 3.
+   **E-mail/senha** e também **Google**.
+2. Ainda em **Sign-in method**, na aba **Settings → Authorized domains**,
+   confirme que `toninho-bomnome.vercel.app` está na lista (o Firebase já
+   adiciona `localhost` sozinho) — sem isso, o login com Google falha em
+   produção.
+3. Pra quem vai usar e-mail/senha: em **Users**, clique **Add user** e
+   crie a conta (e-mail + senha). Pra quem vai usar Google: não precisa
+   criar nada aqui — a conta aparece em **Users** sozinha, assim que a
+   pessoa entrar pela primeira vez em `/admin/login` com **Entrar com o
+   Google**.
+4. Guarde os e-mails de quem vai ter acesso (Cauan e Toninho) — eles vão
+   pra variável `ALLOWED_ADMIN_EMAILS` no passo 3, e é com eles que o
+   passo 5 concede a claim de admin.
 
 ### 3. Variáveis de ambiente na Vercel
 
@@ -149,16 +167,33 @@ npm run migrate-admin-fields
 Isso dá um `code` (`TB-0001`, `TB-0002`...) pra quem ainda não tem e
 marca `published: true` em tudo que já estava no ar.
 
-### 5. Regras do Firestore
+### 5. Conceder acesso de admin (custom claim)
+
+Depois que o site estiver publicado (passo 7) e a pessoa tiver entrado
+**pelo menos uma vez** em `/admin/login` (com Google ou e-mail/senha —
+as duas formas já criam o registro dela no Firebase Auth sozinhas),
+rode:
+
+```bash
+npm run set-admin-claims
+```
+
+Isso lê `ALLOWED_ADMIN_EMAILS` (passo 3) e concede a claim `admin: true`
+pra cada e-mail da lista — é essa claim, não só "estar logado", que as
+regras do Firestore usam pra liberar a leitura de rascunho (ver
+`firestore.rules`). Rode de novo sempre que adicionar alguém novo à
+lista.
+
+### 6. Regras do Firestore
 
 ```bash
 npm run deploy:rules
 ```
 
-Publica `firestore.rules` (leitura só do publicado + índice em
-`firestore.indexes.json`).
+Publica `firestore.rules` (leitura só do publicado, ou de quem tem a
+claim de admin + índice em `firestore.indexes.json`).
 
-### 6. Vercel — deploy
+### 7. Vercel — deploy
 
 ```bash
 npm run build
@@ -178,7 +213,7 @@ componentes que exibem esse campo.
 ## Onde mexer se quiser mudar algo
 
 - **Lista de tipos aceitos** (Casa, Apartamento...): `src/types.ts`, `PROPERTY_TYPES`.
-- **Quem tem acesso ao painel**: variável `ALLOWED_ADMIN_EMAILS` na Vercel + contas no Firebase Auth.
+- **Quem tem acesso ao painel**: variável `ALLOWED_ADMIN_EMAILS` na Vercel (controla escrita) + `npm run set-admin-claims` (controla o que a pessoa consegue ler/ver no painel — precisa rodar de novo depois de mudar a lista).
 - **Tamanho máximo de foto/vídeo**: `src/lib/cloudinaryUpload.ts`, `MAX_PHOTO_SIZE_MB`/`MAX_VIDEO_SIZE_MB`.
 - **Exibir o endereço completo na página do imóvel**: `src/pages/PropertyDetail.tsx` (o dado já vem em `property.street`, só falta renderizar).
 - **Faixas de preço do filtro/busca**: `src/pages/Imoveis.tsx` e `src/components/HeroSearch.tsx`, objeto `priceRanges`.

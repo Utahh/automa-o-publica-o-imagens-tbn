@@ -5,9 +5,16 @@ ninguém rodando nada por trás. Só o Cauan e o Toninho têm acesso.
 
 ## 1. Entrar no painel
 
-Acesse **toninho-bomnome.vercel.app/admin** e entre com seu e-mail e
-senha (a mesma conta configurada no Firebase — se esqueceu a senha, peça
-pro Cauan resetar).
+Acesse **toninho-bomnome.vercel.app/admin** e entre de um dos dois
+jeitos:
+
+- **Entrar com o Google** — mais rápido, usa sua conta do Google normal.
+- **E-mail e senha** — a conta configurada no Firebase (se esqueceu a
+  senha, peça pro Cauan resetar).
+
+Só as contas autorizadas (a sua e a do Cauan) conseguem ver alguma coisa
+depois de entrar — qualquer outra conta cai de volta na tela de login
+com um aviso.
 
 ## 2. Criar o imóvel
 

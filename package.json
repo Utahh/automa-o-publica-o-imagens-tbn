@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "migrate-admin-fields": "node scripts/migrate-admin-fields.mjs",
+    "set-admin-claims": "node scripts/set-admin-claims.mjs",
     "deploy:rules": "npx firebase-tools deploy --only firestore:rules",
     "publish": "npm run build && vercel --prod --yes --project toninho-bomnome"
   },
