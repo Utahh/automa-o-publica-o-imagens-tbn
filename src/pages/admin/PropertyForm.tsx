@@ -213,7 +213,7 @@ export function PropertyForm() {
       // página recarregar).
       navigate("/admin", {
         replace: true,
-        state: { justSaved: { title: payload.title, published: publish } },
+        state: { justSaved: { title: payload.title, published: publish, isNew } },
       });
     } catch (err) {
       setError((err as Error).message);

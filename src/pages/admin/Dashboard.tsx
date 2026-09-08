@@ -9,7 +9,7 @@ import { formatPrice } from "../../lib/format";
 import type { Property } from "../../types";
 
 interface JustSavedState {
-  justSaved?: { title: string; published: boolean };
+  justSaved?: { title: string; published: boolean; isNew: boolean };
 }
 
 export function Dashboard() {
@@ -22,8 +22,9 @@ export function Dashboard() {
   useEffect(() => {
     const state = location.state as JustSavedState | null;
     if (!state?.justSaved) return;
-    const { title, published } = state.justSaved;
-    setSuccessMessage(`"${title}" cadastrado com sucesso${published ? "" : " como rascunho"}.`);
+    const { title, published, isNew } = state.justSaved;
+    const action = isNew ? "cadastrado" : "salvo";
+    setSuccessMessage(`"${title}" ${action} com sucesso${published ? "" : " como rascunho"}.`);
     // Limpa o state da navegação pra um F5 na página não repetir o aviso.
     navigate(location.pathname, { replace: true, state: null });
     const timer = setTimeout(() => setSuccessMessage(null), 6000);
