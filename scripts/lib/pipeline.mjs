@@ -146,12 +146,14 @@ export async function deleteProperty(id) {
 }
 
 // ─── Geocodificação (mapa da página do imóvel) ─────────────────────────────
-// Usa só bairro/cidade/estado (nunca rua/CEP) de propósito: o ponto
-// resultante já fica só no nível do bairro, então mesmo quem acessasse o
-// dado bruto não teria a localização exata — mesma regra de privacidade já
-// aplicada ao endereço completo (salvo, nunca exibido). Nominatim
-// (OpenStreetMap) é gratuito e não pede chave — só exige um User-Agent
-// identificando quem está chamando.
+// O ponto nunca vem da rua/número (só CEP, bairro, cidade, estado) e nunca é
+// exibido como pino exato — sempre um círculo de raio aproximado por cima
+// (ver LocationCard.tsx) — mesma regra de privacidade já aplicada ao
+// endereço completo (salvo, nunca exibido publicamente). Dentro dessa regra,
+// tenta a fonte mais precisa primeiro e vai caindo pra mais genérica:
+//   1) CEP (BrasilAPI, gratuita, sem chave) — normalmente o mais preciso.
+//   2) bairro + cidade + UF (Nominatim/OpenStreetMap, gratuita, sem chave).
+//   3) só cidade + UF — quando o bairro é pequeno demais pra existir no OSM.
 const NOMINATIM_USER_AGENT = "tbn-imoveis-site/1.0 (contato: cauan.delimabtu@gmail.com)";
 
 async function nominatimSearch(query) {
@@ -166,20 +168,41 @@ async function nominatimSearch(query) {
   return { lat, lng };
 }
 
-// Muito bairro pequeno/residencial simplesmente não existe no OpenStreetMap
-// (cobertura incompleta é comum fora de capitais), então a busca por
-// "bairro, cidade, UF" às vezes não acha nada mesmo o bairro sendo real.
-// Nesse caso cai pro centro da cidade em vez de deixar o imóvel sem mapa —
-// ainda é uma aproximação (e continua sem expor endereço/rua).
-export async function geocodeApproximateLocation({ neighborhood, city, state }) {
-  if (!neighborhood && !city) return null;
+// BrasilAPI agrega Correios/ViaCEP/OpenCEP e, quando a fonte tem o dado,
+// devolve `location.coordinates` já pronto pro CEP — evita depender só de
+// bairro (que o OpenStreetMap às vezes nem tem cadastrado).
+async function cepSearch(zipCode) {
+  const digits = String(zipCode || "").replace(/\D/g, "");
+  if (digits.length !== 8) return null;
+  try {
+    const res = await fetch(`https://brasilapi.com.br/api/cep/v2/${digits}`);
+    if (!res.ok) return null;
+    const body = await res.json();
+    const coords = body?.location?.coordinates;
+    if (!coords) return null;
+    const lat = parseFloat(coords.latitude);
+    const lng = parseFloat(coords.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return { lat, lng };
+  } catch {
+    return null;
+  }
+}
+
+export async function geocodeApproximateLocation({ zipCode, neighborhood, city, state }) {
+  if (!zipCode && !neighborhood && !city) return null;
+
+  const byCep = await cepSearch(zipCode).catch(() => null);
+  if (byCep) return byCep;
 
   const withNeighborhood = [neighborhood, city, state ? `${state}, Brasil` : "Brasil"].filter(Boolean).join(", ");
   const cityOnly = [city, state ? `${state}, Brasil` : "Brasil"].filter(Boolean).join(", ");
 
   try {
-    const result = await nominatimSearch(withNeighborhood);
-    if (result) return result;
+    if (neighborhood || city) {
+      const result = await nominatimSearch(withNeighborhood);
+      if (result) return result;
+    }
     if (!city) return null;
     return await nominatimSearch(cityOnly);
   } catch {

@@ -60,6 +60,7 @@ export default async function handler(req, res) {
   const id = await generateUniqueSlug(db, body.title);
   const code = await getNextPropertyCode(db);
   const coords = await geocodeApproximateLocation({
+    zipCode: body.zipCode,
     neighborhood: body.neighborhood,
     city: body.city,
     state: body.state,
