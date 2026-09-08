@@ -39,6 +39,10 @@ export interface Property {
   street: string;
   /** CEP, salvo mas não exibido publicamente — mesmo tratamento do endereço completo. */
   zipCode?: string;
+  /** Coordenadas aproximadas (geocodificadas a partir do CEP/endereço) —
+   *  usadas só pra desenhar o raio no mapa, nunca um pino exato. */
+  lat?: number;
+  lng?: number;
   price: number;
   areaM2: number;
   bedrooms: number;
@@ -47,6 +51,12 @@ export interface Property {
   /** Comodidades — opcionais, ausentes em imóveis cadastrados antes delas existirem (tratar como false). */
   hasPool?: boolean;
   hasBarbecue?: boolean;
+  hasSauna?: boolean;
+  hasSocialBathroom?: boolean;
+  hasSuite?: boolean;
+  /** Condomínio — só faz sentido mostrar condoFee quando hasCondo é true. */
+  hasCondo?: boolean;
+  condoFee?: number;
   featured: boolean;
   /** informação de bairro que só o corretor saberia — regra do checklist de marca */
   neighborhoodFact: string;

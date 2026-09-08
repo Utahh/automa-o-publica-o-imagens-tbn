@@ -7,6 +7,7 @@ import { PhotoManager } from "../../components/admin/PhotoManager";
 import { VideoUploader } from "../../components/admin/VideoUploader";
 import { LocationField, type LocationValue } from "../../components/admin/LocationField";
 import { Toggle } from "../../components/admin/Toggle";
+import { CurrencyInput } from "../../components/admin/CurrencyInput";
 import { PROPERTY_TYPES, type DealType, type Property, type PropertyStatus, type PropertyType } from "../../types";
 
 interface FormState extends LocationValue {
@@ -23,6 +24,11 @@ interface FormState extends LocationValue {
   parking: string;
   hasPool: boolean;
   hasBarbecue: boolean;
+  hasSauna: boolean;
+  hasSocialBathroom: boolean;
+  hasSuite: boolean;
+  hasCondo: boolean;
+  condoFee: string;
   neighborhoodFact: string;
   description: string;
   gallery: string[];
@@ -48,6 +54,11 @@ const EMPTY_FORM: FormState = {
   parking: "",
   hasPool: false,
   hasBarbecue: false,
+  hasSauna: false,
+  hasSocialBathroom: false,
+  hasSuite: false,
+  hasCondo: false,
+  condoFee: "",
   neighborhoodFact: "",
   description: "",
   gallery: [],
@@ -74,6 +85,11 @@ function toFormState(p: Property): FormState {
     parking: String(p.parking || ""),
     hasPool: p.hasPool ?? false,
     hasBarbecue: p.hasBarbecue ?? false,
+    hasSauna: p.hasSauna ?? false,
+    hasSocialBathroom: p.hasSocialBathroom ?? false,
+    hasSuite: p.hasSuite ?? false,
+    hasCondo: p.hasCondo ?? false,
+    condoFee: String(p.condoFee || ""),
     neighborhoodFact: p.neighborhoodFact || "",
     description: p.description.join("\n\n"),
     gallery: p.gallery,
@@ -168,6 +184,11 @@ export function PropertyForm() {
         parking: Number(form.parking) || 0,
         hasPool: form.hasPool,
         hasBarbecue: form.hasBarbecue,
+        hasSauna: form.hasSauna,
+        hasSocialBathroom: form.hasSocialBathroom,
+        hasSuite: form.hasSuite,
+        hasCondo: form.hasCondo,
+        condoFee: form.hasCondo ? Number(form.condoFee) || 0 : 0,
         neighborhoodFact: form.neighborhoodFact.trim(),
         description: form.description
           .split(/\n\s*\n/)
@@ -179,9 +200,15 @@ export function PropertyForm() {
       };
 
       if (isNew) {
-        const created = await createProperty(payload);
-        navigate(`/admin/imoveis/${created.id}`, { replace: true });
-      } else if (id) {
+        await createProperty(payload);
+        // Volta pro painel com a lista — é ali que dá pra ver que o
+        // imóvel novo realmente foi salvo (ficar no formulário sem
+        // nenhum aviso passava a impressão de que nada tinha acontecido).
+        navigate("/admin", { replace: true });
+        return;
+      }
+
+      if (id) {
         await updateProperty(id, payload);
       }
       setForm((f) => ({ ...f, published: publish }));
@@ -215,8 +242,8 @@ export function PropertyForm() {
           <Field label="Status">
             <Select value={form.status} onChange={(v) => patch({ status: v as PropertyStatus })} options={["Disponível", "Em negociação"]} />
           </Field>
-          <Field label="Valor (R$) *">
-            <Input name="price" type="number" value={form.price} onChange={(v) => patch({ price: v })} placeholder="480000" />
+          <Field label="Valor *">
+            <CurrencyInput name="price" value={form.price} onChange={(v) => patch({ price: v })} />
           </Field>
         </Section>
 
@@ -241,9 +268,25 @@ export function PropertyForm() {
           </Field>
         </Section>
 
+        <Section title="Condomínio (opcional)">
+          <Toggle checked={form.hasCondo} onChange={() => patch({ hasCondo: !form.hasCondo })} label="Tem condomínio" />
+          {form.hasCondo && (
+            <Field label="Taxa do condomínio (opcional)">
+              <CurrencyInput value={form.condoFee} onChange={(v) => patch({ condoFee: v })} />
+            </Field>
+          )}
+        </Section>
+
         <Section title="Comodidades (opcional)">
           <Toggle checked={form.hasPool} onChange={() => patch({ hasPool: !form.hasPool })} label="Piscina" />
           <Toggle checked={form.hasBarbecue} onChange={() => patch({ hasBarbecue: !form.hasBarbecue })} label="Churrasqueira" />
+          <Toggle checked={form.hasSauna} onChange={() => patch({ hasSauna: !form.hasSauna })} label="Sauna" />
+          <Toggle
+            checked={form.hasSocialBathroom}
+            onChange={() => patch({ hasSocialBathroom: !form.hasSocialBathroom })}
+            label="Banheiro social"
+          />
+          <Toggle checked={form.hasSuite} onChange={() => patch({ hasSuite: !form.hasSuite })} label="Suíte" />
         </Section>
 
         <Section title="Descrição">
@@ -285,7 +328,7 @@ export function PropertyForm() {
             onClick={() => handleSubmit(false)}
             className="rounded-xl border border-grafite/15 px-5 py-2.5 font-display text-sm font-semibold text-grafite transition-colors hover:bg-grafite/5 disabled:opacity-60"
           >
-            Salvar rascunho
+            {saving ? "Salvando…" : "Salvar rascunho"}
           </button>
           <button
             type="button"

@@ -144,3 +144,31 @@ export async function deleteProperty(id) {
   const db = firestore();
   await db.collection(FIRESTORE_COLLECTION).doc(id).delete();
 }
+
+// ─── Geocodificação (mapa da página do imóvel) ─────────────────────────────
+// Usa só bairro/cidade/estado (nunca rua/CEP) de propósito: o ponto
+// resultante já fica só no nível do bairro, então mesmo quem acessasse o
+// dado bruto não teria a localização exata — mesma regra de privacidade já
+// aplicada ao endereço completo (salvo, nunca exibido). Nominatim
+// (OpenStreetMap) é gratuito e não pede chave — só exige um User-Agent
+// identificando quem está chamando.
+const NOMINATIM_USER_AGENT = "tbn-imoveis-site/1.0 (contato: cauan.delimabtu@gmail.com)";
+
+export async function geocodeApproximateLocation({ neighborhood, city, state }) {
+  const query = [neighborhood, city, state ? `${state}, Brasil` : "Brasil"].filter(Boolean).join(", ");
+  if (!neighborhood && !city) return null;
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(query)}`;
+    const res = await fetch(url, { headers: { "User-Agent": NOMINATIM_USER_AGENT } });
+    if (!res.ok) return null;
+    const results = await res.json();
+    if (!Array.isArray(results) || results.length === 0) return null;
+    const lat = parseFloat(results[0].lat);
+    const lng = parseFloat(results[0].lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return { lat, lng };
+  } catch {
+    return null;
+  }
+}

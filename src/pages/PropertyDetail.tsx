@@ -1,5 +1,5 @@
 import { Link, Navigate, useParams } from "react-router-dom";
-import { ArrowLeft, Flame, Waves } from "lucide-react";
+import { ArrowLeft, BedDouble, Flame, ShowerHead, Thermometer, Waves } from "lucide-react";
 import { Gallery } from "../components/Gallery";
 import { SpecRow } from "../components/SpecRow";
 import { LocationCard } from "../components/LocationCard";
@@ -66,14 +66,25 @@ export function PropertyDetail() {
                   )}
                   <p className="mt-1 font-mono text-[11px] text-grafite-muted/70">Código {property.code}</p>
                 </div>
-                <p className="font-mono-tabular font-mono text-2xl font-semibold text-azul-escritura sm:text-3xl">
-                  {formatPrice(property.price, property.dealType)}
-                </p>
+                <div className="text-right">
+                  <p className="font-mono-tabular font-mono text-2xl font-semibold text-azul-escritura sm:text-3xl">
+                    {formatPrice(property.price, property.dealType)}
+                  </p>
+                  {property.hasCondo && property.condoFee ? (
+                    <p className="mt-1 font-display text-[13px] text-grafite-muted">
+                      + {formatPrice(property.condoFee, "Venda")} de condomínio
+                    </p>
+                  ) : null}
+                </div>
               </div>
 
               <SpecRow property={property} className="mt-6 border-y border-grafite/8 py-5" />
 
-              {(property.hasPool || property.hasBarbecue) && (
+              {(property.hasPool ||
+                property.hasBarbecue ||
+                property.hasSauna ||
+                property.hasSocialBathroom ||
+                property.hasSuite) && (
                 <div className="mt-5 flex flex-wrap gap-2.5">
                   {property.hasPool && (
                     <span className="flex items-center gap-1.5 rounded-full bg-azul-escritura/10 px-3 py-1.5 font-display text-[13px] font-medium text-azul-escritura">
@@ -85,6 +96,24 @@ export function PropertyDetail() {
                     <span className="flex items-center gap-1.5 rounded-full bg-azul-escritura/10 px-3 py-1.5 font-display text-[13px] font-medium text-azul-escritura">
                       <Flame className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
                       Churrasqueira
+                    </span>
+                  )}
+                  {property.hasSauna && (
+                    <span className="flex items-center gap-1.5 rounded-full bg-azul-escritura/10 px-3 py-1.5 font-display text-[13px] font-medium text-azul-escritura">
+                      <Thermometer className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
+                      Sauna
+                    </span>
+                  )}
+                  {property.hasSocialBathroom && (
+                    <span className="flex items-center gap-1.5 rounded-full bg-azul-escritura/10 px-3 py-1.5 font-display text-[13px] font-medium text-azul-escritura">
+                      <ShowerHead className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
+                      Banheiro social
+                    </span>
+                  )}
+                  {property.hasSuite && (
+                    <span className="flex items-center gap-1.5 rounded-full bg-azul-escritura/10 px-3 py-1.5 font-display text-[13px] font-medium text-azul-escritura">
+                      <BedDouble className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden="true" />
+                      Suíte
                     </span>
                   )}
                 </div>

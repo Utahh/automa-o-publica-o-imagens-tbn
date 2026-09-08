@@ -9,6 +9,7 @@ import {
   deletePropertyAssets,
   firestore,
   FIRESTORE_COLLECTION,
+  geocodeApproximateLocation,
   initCloudinary,
   updateProperty,
 } from "../../scripts/lib/pipeline.mjs";
@@ -37,6 +38,20 @@ export default async function handler(req, res) {
         .split(/\n\s*\n/)
         .map((p) => p.trim())
         .filter(Boolean);
+    }
+    if (patch.hasCondo !== undefined) {
+      patch.condoFee = patch.hasCondo ? Number(patch.condoFee) || 0 : 0;
+    }
+    // Só regeocodifica se a localização veio junto no patch — evita
+    // chamar o Nominatim numa edição que só mexeu, por exemplo, no preço.
+    if (patch.neighborhood !== undefined || patch.city !== undefined || patch.state !== undefined) {
+      const coords = await geocodeApproximateLocation({
+        neighborhood: patch.neighborhood,
+        city: patch.city,
+        state: patch.state,
+      });
+      patch.lat = coords?.lat ?? null;
+      patch.lng = coords?.lng ?? null;
     }
 
     await updateProperty(id, patch);

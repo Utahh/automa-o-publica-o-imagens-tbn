@@ -2,7 +2,13 @@
 // painel. Fotos/vídeo já chegam aqui como URLs (o navegador subiu direto
 // pro Cloudinary antes) — este endpoint só valida e grava no Firestore.
 import { requireAdmin } from "../_lib/auth.mjs";
-import { firestore, generateUniqueSlug, getNextPropertyCode, upsertProperty } from "../../scripts/lib/pipeline.mjs";
+import {
+  firestore,
+  generateUniqueSlug,
+  geocodeApproximateLocation,
+  getNextPropertyCode,
+  upsertProperty,
+} from "../../scripts/lib/pipeline.mjs";
 
 // Só o essencial pra anunciar um imóvel — localização, "o que só quem
 // mora perto sabe" e vaga ficam opcionais (regra de negócio: nem todo
@@ -53,6 +59,11 @@ export default async function handler(req, res) {
   const db = firestore();
   const id = await generateUniqueSlug(db, body.title);
   const code = await getNextPropertyCode(db);
+  const coords = await geocodeApproximateLocation({
+    neighborhood: body.neighborhood,
+    city: body.city,
+    state: body.state,
+  });
 
   const property = {
     id,
@@ -68,6 +79,8 @@ export default async function handler(req, res) {
     state: body.state || "",
     street: body.street || "",
     zipCode: body.zipCode || "",
+    lat: coords?.lat ?? null,
+    lng: coords?.lng ?? null,
     price: Number(body.price) || 0,
     areaM2: Number(body.areaM2) || 0,
     bedrooms: Number(body.bedrooms) || 0,
@@ -75,6 +88,11 @@ export default async function handler(req, res) {
     parking: Number(body.parking) || 0,
     hasPool: Boolean(body.hasPool),
     hasBarbecue: Boolean(body.hasBarbecue),
+    hasSauna: Boolean(body.hasSauna),
+    hasSocialBathroom: Boolean(body.hasSocialBathroom),
+    hasSuite: Boolean(body.hasSuite),
+    hasCondo: Boolean(body.hasCondo),
+    condoFee: body.hasCondo ? Number(body.condoFee) || 0 : 0,
     featured: Boolean(body.featured),
     neighborhoodFact: body.neighborhoodFact || "",
     description,
