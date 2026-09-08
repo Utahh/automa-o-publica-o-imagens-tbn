@@ -200,24 +200,21 @@ export function PropertyForm() {
       };
 
       if (isNew) {
-        const created = await createProperty(payload);
-        // Volta pro painel com a lista — é ali que dá pra ver que o
-        // imóvel novo realmente foi salvo (ficar no formulário sem
-        // nenhum aviso passava a impressão de que nada tinha acontecido).
-        // O aviso de sucesso propriamente dito é mostrado lá no Dashboard,
-        // via router state (evita some se a página recarregar).
-        navigate("/admin", {
-          replace: true,
-          state: { justSaved: { title: created.title, published: created.published } },
-        });
-        return;
-      }
-
-      if (id) {
+        await createProperty(payload);
+      } else if (id) {
         await updateProperty(id, payload);
       }
-      setForm((f) => ({ ...f, published: publish }));
-      setDirty(false);
+
+      // Volta pro painel com a lista — é ali que dá pra ver que o imóvel
+      // realmente foi salvo (ficar no formulário sem nenhum aviso passava
+      // a impressão de que nada tinha acontecido). Vale tanto pra cadastro
+      // novo quanto pra edição — o aviso de sucesso propriamente dito é
+      // mostrado lá no Dashboard, via router state (evita some se a
+      // página recarregar).
+      navigate("/admin", {
+        replace: true,
+        state: { justSaved: { title: payload.title, published: publish } },
+      });
     } catch (err) {
       setError((err as Error).message);
     } finally {
