@@ -200,11 +200,16 @@ export function PropertyForm() {
       };
 
       if (isNew) {
-        await createProperty(payload);
+        const created = await createProperty(payload);
         // Volta pro painel com a lista — é ali que dá pra ver que o
         // imóvel novo realmente foi salvo (ficar no formulário sem
         // nenhum aviso passava a impressão de que nada tinha acontecido).
-        navigate("/admin", { replace: true });
+        // O aviso de sucesso propriamente dito é mostrado lá no Dashboard,
+        // via router state (evita some se a página recarregar).
+        navigate("/admin", {
+          replace: true,
+          state: { justSaved: { title: created.title, published: created.published } },
+        });
         return;
       }
 

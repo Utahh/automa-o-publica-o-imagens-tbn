@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Pencil, Trash2 } from "lucide-react";
 import { SafeImage } from "../../components/SafeImage";
 import { Toggle } from "../../components/admin/Toggle";
@@ -8,9 +8,28 @@ import { updateProperty, deleteProperty } from "../../lib/adminApi";
 import { formatPrice } from "../../lib/format";
 import type { Property } from "../../types";
 
+interface JustSavedState {
+  justSaved?: { title: string; published: boolean };
+}
+
 export function Dashboard() {
   const { properties, loading, error, refresh } = useAllProperties();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const state = location.state as JustSavedState | null;
+    if (!state?.justSaved) return;
+    const { title, published } = state.justSaved;
+    setSuccessMessage(`"${title}" cadastrado com sucesso${published ? "" : " como rascunho"}.`);
+    // Limpa o state da navegação pra um F5 na página não repetir o aviso.
+    navigate(location.pathname, { replace: true, state: null });
+    const timer = setTimeout(() => setSuccessMessage(null), 6000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
 
   const publishedCount = properties.filter((p) => p.published).length;
   const draftCount = properties.length - publishedCount;
@@ -68,6 +87,15 @@ export function Dashboard() {
           + Novo imóvel
         </Link>
       </div>
+
+      {successMessage && (
+        <p
+          aria-live="polite"
+          className="mt-6 rounded-xl bg-emerald-700/10 px-4 py-3 font-display text-sm font-medium text-emerald-800"
+        >
+          {successMessage}
+        </p>
+      )}
 
       {error && <p className="mt-6 font-display text-sm text-amber-700">Erro ao carregar imóveis: {error.message}</p>}
       {loading && <p className="mt-6 font-display text-sm text-grafite-muted">Carregando…</p>}

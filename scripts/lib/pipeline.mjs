@@ -154,20 +154,34 @@ export async function deleteProperty(id) {
 // identificando quem está chamando.
 const NOMINATIM_USER_AGENT = "tbn-imoveis-site/1.0 (contato: cauan.delimabtu@gmail.com)";
 
+async function nominatimSearch(query) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(query)}`;
+  const res = await fetch(url, { headers: { "User-Agent": NOMINATIM_USER_AGENT } });
+  if (!res.ok) return null;
+  const results = await res.json();
+  if (!Array.isArray(results) || results.length === 0) return null;
+  const lat = parseFloat(results[0].lat);
+  const lng = parseFloat(results[0].lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return { lat, lng };
+}
+
+// Muito bairro pequeno/residencial simplesmente não existe no OpenStreetMap
+// (cobertura incompleta é comum fora de capitais), então a busca por
+// "bairro, cidade, UF" às vezes não acha nada mesmo o bairro sendo real.
+// Nesse caso cai pro centro da cidade em vez de deixar o imóvel sem mapa —
+// ainda é uma aproximação (e continua sem expor endereço/rua).
 export async function geocodeApproximateLocation({ neighborhood, city, state }) {
-  const query = [neighborhood, city, state ? `${state}, Brasil` : "Brasil"].filter(Boolean).join(", ");
   if (!neighborhood && !city) return null;
 
+  const withNeighborhood = [neighborhood, city, state ? `${state}, Brasil` : "Brasil"].filter(Boolean).join(", ");
+  const cityOnly = [city, state ? `${state}, Brasil` : "Brasil"].filter(Boolean).join(", ");
+
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(query)}`;
-    const res = await fetch(url, { headers: { "User-Agent": NOMINATIM_USER_AGENT } });
-    if (!res.ok) return null;
-    const results = await res.json();
-    if (!Array.isArray(results) || results.length === 0) return null;
-    const lat = parseFloat(results[0].lat);
-    const lng = parseFloat(results[0].lon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-    return { lat, lng };
+    const result = await nominatimSearch(withNeighborhood);
+    if (result) return result;
+    if (!city) return null;
+    return await nominatimSearch(cityOnly);
   } catch {
     return null;
   }
