@@ -5,7 +5,7 @@ import { agent } from "../data/agent";
 
 export function Footer() {
   return (
-    <footer id="contato" className="bg-grafite-noite pb-16 pt-16 text-cinza-papel">
+    <footer id="contato" className="bg-grafite-noite pb-16 pt-16 text-cinza-papel print:hidden">
       <div className="mx-auto grid max-w-7xl gap-12 px-6 sm:px-8 md:grid-cols-[1.3fr_1fr_1fr]">
         <div>
           <Link to="/" className="flex items-center">
@@ -22,6 +22,7 @@ export function Footer() {
           <ul className="mt-4 space-y-2.5 font-display text-sm">
             <li><Link to="/" className="text-cinza-papel/85 transition-colors hover:text-azul-sinal">Início</Link></li>
             <li><Link to="/imoveis" className="text-cinza-papel/85 transition-colors hover:text-azul-sinal">Imóveis</Link></li>
+            <li><Link to="/lancamentos" className="text-cinza-papel/85 transition-colors hover:text-azul-sinal">Lançamentos</Link></li>
           </ul>
         </div>
 

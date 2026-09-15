@@ -10,6 +10,7 @@ import { useScrolled } from "../hooks/useScrolled";
 const links = [
   { to: "/", label: "Início" },
   { to: "/imoveis", label: "Imóveis" },
+  { to: "/lancamentos", label: "Lançamentos" },
 ];
 
 interface NavbarProps {
@@ -24,7 +25,7 @@ export function Navbar({ transparentAtTop = false }: NavbarProps) {
   return (
     <header
       className={clsx(
-        "fixed inset-x-0 top-0 z-50 transition-colors duration-300",
+        "fixed inset-x-0 top-0 z-50 transition-colors duration-300 print:hidden",
         solid ? "bg-grafite-noite/95 backdrop-blur-md shadow-[0_1px_0_0_rgba(239,240,241,0.08)]" : "bg-transparent",
       )}
     >
@@ -42,7 +43,7 @@ export function Navbar({ transparentAtTop = false }: NavbarProps) {
               className={({ isActive }) =>
                 clsx(
                   "font-display text-sm font-medium tracking-tight text-papel-muted transition-colors hover:text-cinza-papel",
-                  isActive && link.to === "/imoveis" && "text-cinza-papel",
+                  isActive && link.to !== "/" && "text-cinza-papel",
                 )
               }
             >

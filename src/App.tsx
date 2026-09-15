@@ -9,6 +9,8 @@ import { RequireAdmin } from "./components/RequireAdmin";
 import { Home } from "./pages/Home";
 import { Imoveis } from "./pages/Imoveis";
 import { PropertyDetail } from "./pages/PropertyDetail";
+import { Lancamentos } from "./pages/Lancamentos";
+import { LancamentoDetail } from "./pages/LancamentoDetail";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/admin/Login";
 import { AdminLayout } from "./pages/admin/AdminLayout";
@@ -49,6 +51,8 @@ function PublicSite() {
             <Route path="/" element={<PageFade><Home /></PageFade>} />
             <Route path="/imoveis" element={<PageFade><Imoveis /></PageFade>} />
             <Route path="/imoveis/:slug" element={<PageFade><PropertyDetail /></PageFade>} />
+            <Route path="/lancamentos" element={<PageFade><Lancamentos /></PageFade>} />
+            <Route path="/lancamentos/:slug" element={<PageFade><LancamentoDetail /></PageFade>} />
             <Route path="*" element={<PageFade><NotFound /></PageFade>} />
           </Routes>
         </AnimatePresence>

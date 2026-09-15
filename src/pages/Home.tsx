@@ -1,4 +1,5 @@
 import { Hero } from "../components/Hero";
+import { LaunchBanner } from "../components/launch/LaunchBanner";
 import { FeaturedSection } from "../components/FeaturedSection";
 import { MoreListingsSection } from "../components/MoreListingsSection";
 import { ValuesSection } from "../components/ValuesSection";
@@ -9,6 +10,7 @@ export function Home() {
   return (
     <>
       <Hero />
+      <LaunchBanner />
       <FeaturedSection />
       <MoreListingsSection />
       <ValuesSection />

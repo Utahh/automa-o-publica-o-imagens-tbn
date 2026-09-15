@@ -35,7 +35,7 @@ export function WhatsAppButton({
         whileTap={{ scale: 0.95 }}
         style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
         className={clsx(
-          "fixed right-4 z-40 flex items-center gap-2 rounded-full bg-azul-escritura px-4 py-3 text-cinza-papel shadow-[0_10px_30px_-8px_rgba(15,18,20,0.5)] sm:right-6 sm:px-5 sm:py-3.5",
+          "fixed right-4 z-40 flex items-center gap-2 rounded-full bg-azul-escritura px-4 py-3 text-cinza-papel shadow-[0_10px_30px_-8px_rgba(15,18,20,0.5)] sm:right-6 sm:px-5 sm:py-3.5 print:hidden",
           className,
         )}
         aria-label={label}
