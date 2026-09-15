@@ -34,7 +34,7 @@ export function FeaturedSection() {
 
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((property, i) => (
-            <PropertyCard key={property.id} property={property} index={i} />
+            <PropertyCard key={property.id} property={property} index={i} source="home_destaque" />
           ))}
         </div>
       </div>

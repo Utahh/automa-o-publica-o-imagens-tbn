@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { SlidersHorizontal, X } from "lucide-react";
@@ -6,6 +6,7 @@ import { PropertyCard } from "../components/PropertyCard";
 import { FilterSelect } from "../components/FilterSelect";
 import { Reveal } from "../components/Reveal";
 import { useProperties } from "../hooks/useProperties";
+import { trackEvent } from "../lib/analytics";
 
 const priceRanges: Record<string, (price: number) => boolean> = {
   "ate-400": (p) => p <= 400000,
@@ -44,6 +45,23 @@ export function Imoveis() {
 
   const hasFilters = Boolean(neighborhood || type || dealType || price);
   const reduceMotion = useReducedMotion();
+
+  // Registra a busca só depois que os filtros "assentam" — evita gravar
+  // um evento a cada clique enquanto a pessoa ainda está ajustando (ex:
+  // trocando bairro e depois tipo em sequência rápida).
+  useEffect(() => {
+    if (!hasFilters) return;
+    const timer = setTimeout(() => {
+      trackEvent({
+        type: "search",
+        path: "/imoveis",
+        filters: { bairro: neighborhood, tipo: type, negocio: dealType, preco: price },
+        resultsCount: filtered.length,
+      });
+    }, 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [neighborhood, type, dealType, price, filtered.length]);
 
   return (
     <div className="min-h-screen bg-cinza-papel pb-16 pt-28">
@@ -108,7 +126,7 @@ export function Imoveis() {
         {filtered.length > 0 ? (
           <motion.div layout={!reduceMotion} className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((property, i) => (
-              <PropertyCard key={property.id} property={property} index={i} />
+              <PropertyCard key={property.id} property={property} index={i} source="listagem" />
             ))}
           </motion.div>
         ) : (

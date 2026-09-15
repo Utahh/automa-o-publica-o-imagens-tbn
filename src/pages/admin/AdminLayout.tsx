@@ -39,6 +39,14 @@ export function AdminLayout() {
               >
                 + Novo imóvel
               </NavLink>
+              <NavLink
+                to="/admin/estatisticas"
+                className={({ isActive }) =>
+                  `font-display text-sm font-medium ${isActive ? "text-azul-escritura" : "text-grafite-muted"}`
+                }
+              >
+                Estatísticas
+              </NavLink>
             </nav>
           </div>
           <div className="flex items-center gap-4">

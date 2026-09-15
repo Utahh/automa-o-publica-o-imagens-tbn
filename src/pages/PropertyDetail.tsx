@@ -1,4 +1,5 @@
-import { Link, Navigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { ArrowLeft, BedDouble, Flame, ShowerHead, Thermometer, Waves } from "lucide-react";
 import { Gallery } from "../components/Gallery";
 import { SpecRow } from "../components/SpecRow";
@@ -11,11 +12,27 @@ import { getPropertyBySlug, getRelatedProperties } from "../data/properties";
 import { useProperties } from "../hooks/useProperties";
 import { formatPrice } from "../lib/format";
 import { agent } from "../data/agent";
+import { trackEvent } from "../lib/analytics";
 
 export function PropertyDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { properties, loading } = useProperties();
   const property = slug ? getPropertyBySlug(properties, slug) : undefined;
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!property) return;
+    const source = (location.state as { source?: string } | null)?.source ?? "direto";
+    trackEvent({
+      type: "property_view",
+      path: location.pathname,
+      propertyId: property.id,
+      propertyCode: property.code,
+      propertyTitle: property.title,
+      source,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [property?.id]);
 
   if (!property) {
     if (loading) return null;
@@ -174,7 +191,7 @@ export function PropertyDetail() {
             </Reveal>
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((p, i) => (
-                <PropertyCard key={p.id} property={p} index={i} />
+                <PropertyCard key={p.id} property={p} index={i} source="relacionado" />
               ))}
             </div>
           </div>

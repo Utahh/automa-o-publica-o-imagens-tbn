@@ -19,5 +19,22 @@ service cloud.firestore {
     match /_meta/{docId} {
       allow read, write: if false;
     }
+
+    // Rastreio anônimo de comportamento (cliques em imóvel, buscas,
+    // visitas de página) — ver src/lib/analytics.ts. Qualquer visitante
+    // pode criar um evento (sem estar logado — é assim que se rastreia
+    // quem NÃO é o corretor), mas só no formato esperado; ninguém lê,
+    // edita ou apaga um evento já gravado, exceto quem tem a claim de
+    // admin, que só lê (painel de estatísticas em /admin/estatisticas).
+    match /analytics_events/{eventId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow create: if request.resource.data.type in ['page_view', 'property_view', 'search']
+        && request.resource.data.path is string
+        && request.resource.data.path.size() <= 300
+        && request.resource.data.sessionId is string
+        && request.resource.data.sessionId.size() <= 100
+        && request.resource.data.timestamp == request.time;
+      allow update, delete: if false;
+    }
   }
 }

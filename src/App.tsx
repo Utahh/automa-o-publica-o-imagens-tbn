@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Navbar } from "./components/Navbar";
@@ -14,6 +14,8 @@ import { Login } from "./pages/admin/Login";
 import { AdminLayout } from "./pages/admin/AdminLayout";
 import { Dashboard } from "./pages/admin/Dashboard";
 import { PropertyForm } from "./pages/admin/PropertyForm";
+import { Stats } from "./pages/admin/Stats";
+import { trackEvent } from "./lib/analytics";
 
 function PageFade({ children }: { children: ReactNode }) {
   return (
@@ -31,6 +33,10 @@ function PageFade({ children }: { children: ReactNode }) {
 function PublicSite() {
   const location = useLocation();
   const isHome = location.pathname === "/";
+
+  useEffect(() => {
+    trackEvent({ type: "page_view", path: location.pathname });
+  }, [location.pathname]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -69,6 +75,7 @@ function App() {
         <Route index element={<Dashboard />} />
         <Route path="imoveis/novo" element={<PropertyForm />} />
         <Route path="imoveis/:id" element={<PropertyForm />} />
+        <Route path="estatisticas" element={<Stats />} />
       </Route>
       <Route path="/*" element={<PublicSite />} />
     </Routes>

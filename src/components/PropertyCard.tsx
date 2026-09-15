@@ -5,7 +5,18 @@ import type { Property } from "../types";
 import { formatPrice, formatArea } from "../lib/format";
 import { SafeImage } from "./SafeImage";
 
-export function PropertyCard({ property, index = 0 }: { property: Property; index?: number }) {
+export function PropertyCard({
+  property,
+  index = 0,
+  source = "outro",
+}: {
+  property: Property;
+  index?: number;
+  /** De onde o card foi renderizado — vai junto na navegação pra
+   *  PropertyDetail poder registrar de onde veio o clique (ver
+   *  src/lib/analytics.ts). */
+  source?: string;
+}) {
   const reduceMotion = useReducedMotion();
 
   return (
@@ -17,6 +28,7 @@ export function PropertyCard({ property, index = 0 }: { property: Property; inde
     >
       <Link
         to={`/imoveis/${property.slug}`}
+        state={{ source }}
         className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(15,18,20,0.06)] ring-1 ring-grafite/5 transition-[transform,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-16px_rgba(15,18,20,0.25)]"
       >
         <div className="relative aspect-[4/3] overflow-hidden bg-grafite">
