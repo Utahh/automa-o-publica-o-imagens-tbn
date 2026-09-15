@@ -150,7 +150,7 @@ Isso é feito **uma única vez**. Depois disso, o dia a dia é só seguir o
 3. Pra quem vai usar e-mail/senha: em **Users**, clique **Add user** e
    crie a conta (e-mail + senha). Pra quem vai usar Google: não precisa
    criar nada aqui — a conta aparece em **Users** sozinha, assim que a
-   pessoa entrar pela primeira vez em `/admin/login` com **Entrar com o
+   pessoa entrar pela primeira vez em `/login` com **Entrar com o
    Google**.
 4. Guarde os e-mails de quem vai ter acesso (Cauan e Toninho) — eles vão
    pra variável `ALLOWED_ADMIN_EMAILS` no passo 3, e é com eles que o
@@ -187,7 +187,7 @@ marca `published: true` em tudo que já estava no ar.
 ### 5. Conceder acesso de admin (custom claim)
 
 Depois que o site estiver publicado (passo 7) e a pessoa tiver entrado
-**pelo menos uma vez** em `/admin/login` (com Google ou e-mail/senha —
+**pelo menos uma vez** em `/login` (com Google ou e-mail/senha —
 as duas formas já criam o registro dela no Firebase Auth sozinhas),
 rode:
 

@@ -12,8 +12,8 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   if (loading) return null;
-  if (!user) return <Navigate to="/admin/login" replace state={{ from: location }} />;
-  if (!isAdmin) return <Navigate to="/admin/login" replace state={{ from: location, denied: true }} />;
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (!isAdmin) return <Navigate to="/login" replace state={{ from: location, denied: true }} />;
 
   return <>{children}</>;
 }

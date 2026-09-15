@@ -1,10 +1,19 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { BrandMark } from "../../components/BrandMark";
 import { useAuth } from "../../hooks/useAuth";
+import { useInactivityLogout } from "../../hooks/useInactivityLogout";
+
+const SESSION_TIMEOUT_MS = 5 * 60 * 1000;
 
 export function AdminLayout() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  useInactivityLogout(SESSION_TIMEOUT_MS, () => {
+    signOut();
+    navigate("/login", { replace: true, state: { expired: true } });
+  });
 
   return (
     <div className="min-h-screen bg-cinza-papel">
