@@ -142,7 +142,7 @@ export function LaunchForm({ launch, values, onChange, aceito, onToggleAceite, o
 
           <div className="mt-8 border border-[var(--launch-cream)] bg-[var(--launch-cream)] p-6">
             <p className="mb-3 font-mono text-[10.5px] font-medium uppercase tracking-[0.2em] text-[var(--launch-accent-dark)]">
-              Termo de consentimento — LGPD
+              Termo de consentimento LGPD
             </p>
             <p className="mb-4 text-[12.5px] leading-relaxed text-grafite-muted">
               Ao confirmar, autorizo o corretor e a {launch.builderName} a tratar os dados pessoais informados nesta

@@ -1,5 +1,5 @@
 import luizTargaLogo from "../assets/launches/luiz-targa-logo.png";
-import luizTargaArte from "../assets/launches/luiz-targa-arte.jpg";
+import luizTargaArte from "../assets/launches/luiz-targa-teaser.jpg";
 
 export type LaunchStatus = "lancamento" | "em-breve";
 
@@ -38,7 +38,7 @@ export interface Launch {
   locationText: string;
   /** Marca (ícone) da construtora — usada pequena, ao lado do texto. */
   logo: string;
-  /** Arte oficial de divulgação do lançamento — vertical, então sempre exibida com altura limitada. */
+  /** Arte de divulgação do lançamento — sempre exibida com altura limitada, qualquer que seja a proporção. */
   art: string;
   /** Sobrescreve o WhatsApp padrão do corretor (agent.whatsappNumber), caso um lançamento use outro número. */
   whatsappNumber?: string;
@@ -58,14 +58,14 @@ export const launches: Launch[] = [
     addressShort: "Rua João de Campos · próx. Residencial Splendour",
     attributes: ["2 TORRES", "40 A 60 M²", "LAZER COMPLETO"],
     descriptionParagraphs: [
-      "Duas torres de 14 andares em um terreno de 6.275 m², com apartamentos de 2 dormitórios (sendo 1 suíte) de 55 a 60 m² e opções compactas de 1 dormitório com 40 m² — todos com varanda.",
+      "Duas torres de 14 andares em um terreno de 6.275 m², com apartamentos de 2 dormitórios (sendo 1 suíte) de 55 a 60 m² e opções compactas de 1 dormitório com 40 m², todos com varanda.",
       "As vagas ficam em um edifício garagem independente no térreo, com quatro níveis, elevador e duas escadas: nada de subsolo embaixo das torres, mais conforto e segurança na chegada em casa.",
-      "A área de lazer é completa, nos moldes do Move (sem rooftop), e o padrão de acabamento é médio — a combinação certa entre qualidade e uma parcela que cabe no seu planejamento.",
+      "A área de lazer é completa, nos moldes do Move (sem rooftop), e o padrão de acabamento é médio: a combinação certa entre qualidade e uma parcela que cabe no seu planejamento.",
     ],
     features: [
       { valor: "2", titulo: "Dormitórios", nota: "Sendo 1 suíte, com varanda" },
-      { valor: "40–60", titulo: "Metragem (m²)", nota: "1 e 2 dormitórios" },
-      { valor: "1–2", titulo: "Vagas cobertas", nota: "Edifício garagem independente" },
+      { valor: "40 a 60", titulo: "Metragem (m²)", nota: "1 e 2 dormitórios" },
+      { valor: "1 a 2", titulo: "Vagas cobertas", nota: "Edifício garagem independente" },
       { valor: "2", titulo: "Torres", nota: "14 andares cada" },
       { valor: "6.275", titulo: "Terreno (m²)", nota: "Área de lazer completa" },
       { valor: "Médio", titulo: "Padrão", nota: "Lazer nos moldes do Move" },

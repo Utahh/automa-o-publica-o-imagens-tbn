@@ -60,10 +60,10 @@ export function LaunchBanner() {
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" strokeWidth={2.3} />
               </span>
             </div>
-            {/* Arte é vertical (2:3) — altura sempre limitada pra não pesar a rolagem, principalmente no mobile. */}
+            {/* Altura sempre limitada pra não pesar a rolagem, principalmente no mobile. */}
             <img
               src={launch.art}
-              alt={`Arte de divulgação — ${launch.builderName}`}
+              alt={`Arte de divulgação do lançamento ${launch.builderName}`}
               className="mx-auto h-[180px] w-auto shrink-0 rounded-lg object-contain sm:mx-0 sm:h-[240px]"
             />
           </Link>

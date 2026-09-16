@@ -38,7 +38,7 @@ export function LaunchCard({ launch, index = 0 }: { launch: Launch; index?: numb
         </div>
         <img
           src={launch.art}
-          alt={`Arte de divulgação — ${launch.builderName}`}
+          alt={`Arte de divulgação do lançamento ${launch.builderName}`}
           className="mx-auto h-[160px] w-auto shrink-0 rounded-lg object-contain sm:mx-0"
         />
       </Link>

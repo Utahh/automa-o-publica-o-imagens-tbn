@@ -82,7 +82,7 @@ export function pagamentoLinhas(v: LaunchFormValues): [string, string, string][]
 /** Monta a mensagem que o corretor recebe no WhatsApp — campos vazios não entram. */
 export function buildLaunchMessage(launch: Launch, v: LaunchFormValues, dataAceite: string): string {
   const linhas: string[] = [];
-  linhas.push(`*FICHA DE CADASTRO — LANÇAMENTO ${launch.builderName.toUpperCase()}*`);
+  linhas.push(`*FICHA DE CADASTRO DO LANÇAMENTO ${launch.builderName.toUpperCase()}*`);
   linhas.push("");
   linhas.push(`*${agent.name} · ${agent.role}*`);
   linhas.push(`${agent.creci} · ${agent.phone}`);
@@ -99,7 +99,7 @@ export function buildLaunchMessage(launch: Launch, v: LaunchFormValues, dataAcei
     linhas.push("*SUGESTÃO DE PAGAMENTO*");
     pagamento.forEach(([entrada, parcelas, semestrais]) => {
       linhas.push(
-        `• Entrada: ${entrada.trim() || "—"} | Parcelas: ${parcelas.trim() || "—"} | Semestrais: ${semestrais.trim() || "—"}`,
+        `• Entrada: ${entrada.trim() || "não informado"} | Parcelas: ${parcelas.trim() || "não informado"} | Semestrais: ${semestrais.trim() || "não informado"}`,
       );
     });
   }

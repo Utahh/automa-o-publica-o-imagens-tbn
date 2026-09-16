@@ -82,7 +82,7 @@ export function LaunchConfirmation({ launch, values, dataAceite, onCorrigir }: L
             >
               <span className="w-[132px] shrink-0 text-xs text-grafite-muted">{rotulo}</span>
               <span className="min-w-0 flex-1 break-words font-medium text-[var(--launch-primary)]">
-                {values[chave].trim() || "—"}
+                {values[chave].trim() || "não informado"}
               </span>
             </div>
           ))}

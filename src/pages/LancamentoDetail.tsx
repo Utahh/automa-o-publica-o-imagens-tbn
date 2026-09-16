@@ -135,7 +135,7 @@ export function LancamentoDetail() {
                 </div>
                 <img
                   src={launch.art}
-                  alt={`Arte de divulgação — ${launch.builderName}`}
+                  alt={`Arte de divulgação do lançamento ${launch.builderName}`}
                   className="mx-auto h-[280px] w-auto object-contain sm:mx-0 sm:h-[380px]"
                 />
               </Reveal>
