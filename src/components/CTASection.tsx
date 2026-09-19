@@ -21,7 +21,7 @@ export function CTASection() {
             Pronto para ver a planta toda?
           </h2>
           <p className="mx-auto mt-4 max-w-md font-display text-[15px] leading-relaxed text-papel-muted">
-            Me conta o que você procura e eu separo os imóveis que fazem sentido — sem enrolação.
+            Me conta o que você procura e eu separo os imóveis que fazem sentido, sem enrolação.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <WhatsAppButton />

@@ -11,6 +11,7 @@ const links = [
   { to: "/", label: "Início" },
   { to: "/imoveis", label: "Imóveis" },
   { to: "/lancamentos", label: "Lançamentos" },
+  { to: "/oportunidades", label: "Oportunidades" },
 ];
 
 interface NavbarProps {

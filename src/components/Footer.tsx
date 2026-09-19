@@ -23,6 +23,7 @@ export function Footer() {
             <li><Link to="/" className="text-cinza-papel/85 transition-colors hover:text-azul-sinal">Início</Link></li>
             <li><Link to="/imoveis" className="text-cinza-papel/85 transition-colors hover:text-azul-sinal">Imóveis</Link></li>
             <li><Link to="/lancamentos" className="text-cinza-papel/85 transition-colors hover:text-azul-sinal">Lançamentos</Link></li>
+            <li><Link to="/oportunidades" className="text-cinza-papel/85 transition-colors hover:text-azul-sinal">Oportunidades</Link></li>
           </ul>
         </div>
 

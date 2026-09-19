@@ -8,7 +8,7 @@ export const agent = {
   instagram: "@toninhobomnome",
   city: "Botucatu",
   tagline: "Planta aberta.",
-  bio: "Corretor de bairro há mais de doze anos. Antes de anunciar qualquer imóvel, eu visito, converso com o síndico e testo o sinal de internet — porque a decisão é sua, e você decide melhor com a planta toda na mesa.",
+  bio: "Corretor de bairro há mais de doze anos. Antes de anunciar qualquer imóvel, eu visito, converso com o síndico e testo o sinal de internet, porque a decisão é sua, e você decide melhor com a planta toda na mesa.",
 } as const;
 
 export function buildWhatsappLink(message: string) {

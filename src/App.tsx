@@ -11,6 +11,8 @@ import { Imoveis } from "./pages/Imoveis";
 import { PropertyDetail } from "./pages/PropertyDetail";
 import { Lancamentos } from "./pages/Lancamentos";
 import { LancamentoDetail } from "./pages/LancamentoDetail";
+import { Oportunidades } from "./pages/Oportunidades";
+import { OportunidadeDetail } from "./pages/OportunidadeDetail";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/admin/Login";
 import { AdminLayout } from "./pages/admin/AdminLayout";
@@ -53,6 +55,8 @@ function PublicSite() {
             <Route path="/imoveis/:slug" element={<PageFade><PropertyDetail /></PageFade>} />
             <Route path="/lancamentos" element={<PageFade><Lancamentos /></PageFade>} />
             <Route path="/lancamentos/:slug" element={<PageFade><LancamentoDetail /></PageFade>} />
+            <Route path="/oportunidades" element={<PageFade><Oportunidades /></PageFade>} />
+            <Route path="/oportunidades/:slug" element={<PageFade><OportunidadeDetail /></PageFade>} />
             <Route path="*" element={<PageFade><NotFound /></PageFade>} />
           </Routes>
         </AnimatePresence>

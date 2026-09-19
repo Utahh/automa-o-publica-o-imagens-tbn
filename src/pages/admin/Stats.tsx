@@ -130,7 +130,7 @@ export function Stats() {
         <div>
           <h1 className="font-display text-2xl font-semibold text-grafite">Estatísticas</h1>
           <p className="mt-1 font-display text-sm text-grafite-muted">
-            Comportamento anônimo dos visitantes — sem nome, telefone ou e-mail de ninguém.
+            Comportamento anônimo dos visitantes, sem nome, telefone ou e-mail de ninguém.
           </p>
         </div>
         <div className="flex gap-1.5 rounded-full bg-white p-1 ring-1 ring-grafite/10">

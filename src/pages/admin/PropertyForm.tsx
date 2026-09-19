@@ -227,7 +227,7 @@ export function PropertyForm() {
   return (
     <div className="max-w-3xl">
       <h1 className="text-balance font-display text-2xl font-semibold text-grafite">
-        {isNew ? "Novo imóvel" : `Editar imóvel — ${form.title}`}
+        {isNew ? "Novo imóvel" : `Editar imóvel: ${form.title}`}
       </h1>
 
       <div className="mt-6 space-y-8 rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(15,18,20,0.06)] ring-1 ring-grafite/5 sm:p-8">

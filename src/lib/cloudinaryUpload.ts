@@ -19,7 +19,7 @@ interface UploadOptions {
 export function uploadToCloudinary(file: File, { folder, resourceType, onProgress }: UploadOptions): Promise<string> {
   if (!CLOUD_NAME || !UPLOAD_PRESET) {
     return Promise.reject(
-      new Error("Upload não configurado — faltam VITE_CLOUDINARY_CLOUD_NAME/VITE_CLOUDINARY_UPLOAD_PRESET.")
+      new Error("Upload não configurado. Faltam VITE_CLOUDINARY_CLOUD_NAME/VITE_CLOUDINARY_UPLOAD_PRESET.")
     );
   }
 
@@ -47,7 +47,7 @@ export function uploadToCloudinary(file: File, { folder, resourceType, onProgres
           reject(new Error("Resposta inesperada do Cloudinary."));
         }
       } else {
-        reject(new Error("Falha no upload — tente de novo."));
+        reject(new Error("Falha no upload, tente de novo."));
       }
     };
     xhr.onerror = () => reject(new Error("Falha de conexão durante o upload."));

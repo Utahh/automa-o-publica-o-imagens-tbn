@@ -80,10 +80,10 @@ export function LocationField({
         </span>
         <span aria-live="polite">
           {status === "not-found" && (
-            <span className="font-display text-[12px] text-amber-700">CEP não encontrado — preencha à mão.</span>
+            <span className="font-display text-[12px] text-amber-700">CEP não encontrado. Preencha à mão.</span>
           )}
           {status === "error" && (
-            <span className="font-display text-[12px] text-amber-700">Não deu pra buscar o CEP agora — preencha à mão.</span>
+            <span className="font-display text-[12px] text-amber-700">Não deu pra buscar o CEP agora. Preencha à mão.</span>
           )}
         </span>
       </label>

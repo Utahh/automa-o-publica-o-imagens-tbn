@@ -11,7 +11,7 @@ const values = [
   {
     icon: MessageCircle,
     title: "Conversa direta",
-    text: "Você fala comigo, não com um call center. Uma dúvida, uma mensagem no WhatsApp — sem script.",
+    text: "Você fala comigo, não com um call center. Uma dúvida, uma mensagem no WhatsApp, sem script.",
     highlight: false,
   },
   {
@@ -23,7 +23,7 @@ const values = [
   {
     icon: TrendingUp,
     title: "Dados de mercado",
-    text: "Preço justo com base em quem realmente vendeu na região nos últimos meses — não em promessa.",
+    text: "Preço justo com base em quem realmente vendeu na região nos últimos meses, não em promessa.",
     highlight: false,
   },
 ];

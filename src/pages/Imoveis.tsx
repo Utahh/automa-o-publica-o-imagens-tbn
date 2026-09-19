@@ -132,7 +132,7 @@ export function Imoveis() {
         ) : (
           <div className="mt-16 flex flex-col items-center gap-2 py-16 text-center">
             <p className="font-display text-lg font-semibold text-grafite">Nenhum imóvel com esses filtros.</p>
-            <p className="font-display text-sm text-grafite-muted">Tente ampliar a busca — ou me chame que eu procuro para você.</p>
+            <p className="font-display text-sm text-grafite-muted">Tente ampliar a busca ou me chame que eu procuro para você.</p>
           </div>
         )}
       </div>

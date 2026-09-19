@@ -24,7 +24,7 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
           >
             <SafeImage
               src={images[index]}
-              alt={`${alt} — foto ${index + 1}`}
+              alt={`${alt}, foto ${index + 1}`}
               wrapperClassName="h-full w-full"
               className="h-full w-full object-cover"
             />

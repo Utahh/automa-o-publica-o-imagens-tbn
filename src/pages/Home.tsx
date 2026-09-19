@@ -1,5 +1,6 @@
 import { Hero } from "../components/Hero";
 import { LaunchBanner } from "../components/launch/LaunchBanner";
+import { OpportunityBanner } from "../components/opportunity/OpportunityBanner";
 import { FeaturedSection } from "../components/FeaturedSection";
 import { MoreListingsSection } from "../components/MoreListingsSection";
 import { ValuesSection } from "../components/ValuesSection";
@@ -11,6 +12,7 @@ export function Home() {
     <>
       <Hero />
       <LaunchBanner />
+      <OpportunityBanner />
       <FeaturedSection />
       <MoreListingsSection />
       <ValuesSection />
