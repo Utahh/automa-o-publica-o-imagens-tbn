@@ -11,14 +11,23 @@ import { BrandMark } from "../components/BrandMark";
 import { getPropertyBySlug, getRelatedProperties } from "../data/properties";
 import { useProperties } from "../hooks/useProperties";
 import { formatPrice } from "../lib/format";
+import { optimizeImage } from "../lib/cloudinary";
 import { agent } from "../data/agent";
 import { trackEvent } from "../lib/analytics";
+import { useSeo } from "../hooks/useSeo";
 
 export function PropertyDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { properties, loading } = useProperties();
   const property = slug ? getPropertyBySlug(properties, slug) : undefined;
   const location = useLocation();
+  useSeo({
+    title: property ? `${property.type} em ${property.neighborhood}, ${property.city}` : undefined,
+    description: property
+      ? `${property.title}. ${formatPrice(property.price, property.dealType)} · ${property.bedrooms} quartos · ${property.areaM2} m².`
+      : undefined,
+    image: property?.cover ? optimizeImage(property.cover, 1200) : undefined,
+  });
 
   useEffect(() => {
     if (!property) return;
@@ -64,11 +73,11 @@ export function PropertyDetail() {
             <Reveal y={16} delay={0.08} className="mt-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <span className="rounded-full bg-azul-escritura/10 px-3 py-1 font-mono text-[11px] font-medium tracking-wide text-azul-escritura">
+                  <span className="rounded-full bg-azul-escritura/10 px-3 py-1 font-mono text-xs font-medium tracking-wide text-azul-escritura">
                     {property.type} · {property.dealType}
                   </span>
                   {property.status !== "Disponível" && (
-                    <span className="ml-2 rounded-full bg-grafite/10 px-3 py-1 font-mono text-[11px] font-medium tracking-wide text-grafite">
+                    <span className="ml-2 rounded-full bg-grafite/10 px-3 py-1 font-mono text-xs font-medium tracking-wide text-grafite">
                       {property.status}
                     </span>
                   )}
@@ -81,7 +90,7 @@ export function PropertyDetail() {
                       {property.state ? ` · ${property.state}` : ""}
                     </p>
                   )}
-                  <p className="mt-1 font-mono text-[11px] text-grafite-muted/70">Código {property.code}</p>
+                  <p className="mt-1 font-mono text-xs text-grafite-muted/70">Código {property.code}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-mono-tabular font-mono text-2xl font-semibold text-azul-escritura sm:text-3xl">
@@ -163,7 +172,7 @@ export function PropertyDetail() {
                 <BrandMark mode="symbol" className="h-11 w-11" />
                 <div>
                   <p className="font-display text-sm font-semibold text-grafite">{agent.name}</p>
-                  <p className="font-mono text-[11px] text-grafite-muted">{agent.creci}</p>
+                  <p className="font-mono text-xs text-grafite-muted">{agent.creci}</p>
                 </div>
               </div>
               <p className="mt-4 font-display text-[13.5px] leading-relaxed text-grafite-muted">

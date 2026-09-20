@@ -20,7 +20,7 @@ export function LaunchBanner() {
           </h2>
           <Link
             to="/lancamentos"
-            className="group flex items-center gap-1.5 font-mono text-xs font-medium uppercase tracking-[0.2em] text-azul-sinal"
+            className="group flex min-h-11 items-center gap-1.5 font-mono text-xs font-medium uppercase tracking-[0.2em] text-azul-sinal"
           >
             Ver todos
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" strokeWidth={2.3} />
@@ -30,12 +30,12 @@ export function LaunchBanner() {
         <Reveal delay={0.08}>
           <Link
             to={`/lancamentos/${launch.slug}`}
-            className="group mt-6 flex flex-col gap-6 rounded-2xl border-l-4 border-azul-escritura bg-grafite p-7 transition-colors duration-300 hover:border-azul-sinal sm:flex-row sm:items-center sm:gap-9 sm:p-9"
+            className="group mt-6 flex flex-col gap-6 rounded-2xl border border-azul-escritura/40 bg-grafite p-7 transition-colors duration-300 hover:border-azul-sinal sm:flex-row sm:items-center sm:gap-9 sm:p-9"
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-3">
                 <img src={launch.logo} alt="" className="h-9 w-9 shrink-0 object-contain" />
-                <span className="inline-block rounded-full bg-azul-escritura px-3.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.25em] text-cinza-papel">
+                <span className="inline-block rounded-full bg-azul-escritura px-3.5 py-1.5 font-mono text-xs font-medium uppercase tracking-[0.25em] text-cinza-papel">
                   Lançamento
                 </span>
               </div>
@@ -49,7 +49,7 @@ export function LaunchBanner() {
                 {launch.attributes.map((attr) => (
                   <span
                     key={attr}
-                    className="rounded-full border border-cinza-papel/15 px-3 py-1.5 font-mono text-[10.5px] tracking-wide text-papel-muted"
+                    className="rounded-full border border-cinza-papel/15 px-3 py-1.5 font-mono text-xs tracking-wide text-papel-muted"
                   >
                     {attr}
                   </span>

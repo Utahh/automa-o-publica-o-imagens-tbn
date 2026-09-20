@@ -1,5 +1,21 @@
 {
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/imoveis/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|slackbot|linkedinbot|discordbot|skypeuripreview).*"
+        }
+      ],
+      "destination": "/api/share?slug=:slug"
+    },
+    { "source": "/imoveis/:slug", "destination": "/index.html" },
+    { "source": "/lancamentos/:slug", "destination": "/index.html" },
+    { "source": "/oportunidades/:slug", "destination": "/index.html" },
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/admin/:path*", "destination": "/index.html" }
   ]
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { createProperty, updateProperty, type NewPropertyInput } from "../../lib/adminApi";
@@ -211,7 +212,7 @@ export function PropertyForm() {
       // novo quanto pra edição — o aviso de sucesso propriamente dito é
       // mostrado lá no Dashboard, via router state (evita some se a
       // página recarregar).
-      navigate("/admin", {
+      navigate("/admin/imoveis", {
         replace: true,
         state: { justSaved: { title: payload.title, published: publish, isNew } },
       });
@@ -226,11 +227,26 @@ export function PropertyForm() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-balance font-display text-2xl font-semibold text-grafite">
+      <Link
+        to="/admin/imoveis"
+        onClick={(e) => {
+          if (dirty && !confirm("Há alterações não salvas. Sair mesmo assim?")) e.preventDefault();
+        }}
+        className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-grafite-muted transition-colors hover:text-azul-escritura"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2.3} aria-hidden="true" />
+        Imóveis
+      </Link>
+      <h1 className="mt-3 text-balance font-display text-2xl font-semibold text-grafite">
         {isNew ? "Novo imóvel" : `Editar imóvel: ${form.title}`}
       </h1>
+      <p className="mt-1 font-display text-sm text-grafite-muted">
+        {isNew
+          ? "Preencha o essencial e publique. O resto pode ser completado depois."
+          : "As alterações só valem depois de salvar."}
+      </p>
 
-      <div className="mt-6 space-y-8 rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(15,18,20,0.06)] ring-1 ring-grafite/5 sm:p-8">
+      <div className="mt-6 space-y-5">
         <Section title="Dados básicos">
           <Field label="Título" className="sm:col-span-2">
             <Input name="title" value={form.title} onChange={(v) => patch({ title: v })} placeholder="Casa térrea com fachada em pedra" />
@@ -315,15 +331,14 @@ export function PropertyForm() {
           </div>
         </Section>
 
-        {error && (
-          <p aria-live="polite" className="font-display text-[13.5px] text-amber-700">
-            {error}
-          </p>
-        )}
+        <p className="font-display text-[12px] text-grafite-muted">* campo obrigatório</p>
 
-        <p className="-mt-4 font-display text-[12px] text-grafite-muted">* campo obrigatório</p>
-
-        <div className="flex flex-wrap gap-3 border-t border-grafite/8 pt-6">
+        <div className="sticky bottom-0 z-10 -mx-2 flex flex-wrap items-center gap-3 rounded-2xl bg-white/95 px-4 py-3.5 shadow-[0_-8px_24px_-12px_rgba(15,18,20,0.25)] ring-1 ring-grafite/8 backdrop-blur">
+          {error && (
+            <p aria-live="polite" className="basis-full font-display text-[13.5px] text-amber-700">
+              {error}
+            </p>
+          )}
           <button
             type="button"
             disabled={saving}
@@ -348,10 +363,10 @@ export function PropertyForm() {
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div>
+    <section className="rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(15,18,20,0.06)] ring-1 ring-grafite/5 sm:p-7">
       <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-azul-escritura">{title}</h2>
-      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
-    </div>
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
+    </section>
   );
 }
 

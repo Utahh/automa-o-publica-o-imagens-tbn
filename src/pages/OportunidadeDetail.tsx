@@ -5,12 +5,19 @@ import { Reveal } from "../components/Reveal";
 import { agent, buildWhatsappLink } from "../data/agent";
 import { getOpportunityBySlug, type OpportunityPhoto } from "../data/opportunities";
 import simboloNegativo from "../assets/brand/simbolo-negativo.svg";
+import { useSeo } from "../hooks/useSeo";
+import { useLaunchFonts } from "../hooks/useLaunchFonts";
 
 const SLIDE_INTERVAL_MS = 4200;
 
 export function OportunidadeDetail() {
   const { slug } = useParams<{ slug: string }>();
   const opportunity = slug ? getOpportunityBySlug(slug) : undefined;
+  useLaunchFonts();
+  useSeo({
+    title: opportunity ? `${opportunity.name} ${opportunity.suffix}`.trim() : undefined,
+    description: opportunity?.shortDescription,
+  });
 
   const [slide, setSlide] = useState(0);
   const [opened, setOpened] = useState<OpportunityPhoto | null>(null);
@@ -44,7 +51,7 @@ export function OportunidadeDetail() {
             key={photo.label}
             type="button"
             onClick={() => setOpened(photo)}
-            className="group relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden bg-[#E6E2DA] outline-0 outline-offset-2 hover:outline-2"
+            className="group relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden bg-areia outline-0 outline-offset-2 hover:outline-2"
             style={{ outlineColor: palette.accent }}
           >
             <img
@@ -54,7 +61,7 @@ export function OportunidadeDetail() {
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />
             <span
-              className="absolute inset-x-0 bottom-0 px-3 pb-2.5 pt-7 text-left font-mono text-[10.5px] tracking-[0.16em] text-white"
+              className="absolute inset-x-0 bottom-0 px-3 pb-2.5 pt-7 text-left font-mono text-xs tracking-[0.16em] text-white"
               style={{ background: `linear-gradient(180deg, transparent 0%, ${palette.primary}d9 100%)` }}
             >
               {photo.label}
@@ -74,7 +81,7 @@ export function OportunidadeDetail() {
             {opportunity.logo && <img src={opportunity.logo} alt={opportunity.name} className="h-[26px] w-auto" />}
             <Link
               to="/oportunidades"
-              className="ml-auto flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
+              className="ml-auto flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
             >
               <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2.3} aria-hidden="true" />
               Oportunidades
@@ -85,7 +92,7 @@ export function OportunidadeDetail() {
             <div className="min-w-0">
               <span
                 style={{ background: palette.accent, color: palette.primary }}
-                className="inline-block px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.3em]"
+                className="inline-block px-3.5 py-1.5 font-mono text-xs uppercase tracking-[0.3em]"
               >
                 {opportunity.badgeLabel}
               </span>
@@ -154,7 +161,7 @@ export function OportunidadeDetail() {
       <div style={{ background: palette.cream }} className="py-16">
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-12 px-6 sm:px-8 lg:grid-cols-2">
           <Reveal>
-            <p style={{ color: palette.accentDark }} className="font-mono text-[11px] uppercase tracking-[0.3em]">
+            <p style={{ color: palette.accentDark }} className="font-mono text-xs uppercase tracking-[0.3em]">
               O empreendimento
             </p>
             <h2
@@ -172,7 +179,7 @@ export function OportunidadeDetail() {
 
           <Reveal delay={0.08}>
             <div style={{ background: palette.primary }} className="p-8 text-white">
-              <p style={{ color: palette.accent }} className="font-mono text-[11px] uppercase tracking-[0.3em]">
+              <p style={{ color: palette.accent }} className="font-mono text-xs uppercase tracking-[0.3em]">
                 Tipologias
               </p>
               {opportunity.tipologias.map((t) => (
@@ -197,7 +204,7 @@ export function OportunidadeDetail() {
         <div className="mx-auto max-w-5xl px-6 sm:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p style={{ color: palette.accentDark }} className="font-mono text-[11px] uppercase tracking-[0.3em]">
+              <p style={{ color: palette.accentDark }} className="font-mono text-xs uppercase tracking-[0.3em]">
                 Áreas comuns
               </p>
               <h2
@@ -207,7 +214,7 @@ export function OportunidadeDetail() {
                 Um clube dentro de casa
               </h2>
             </div>
-            <span className="font-mono text-[11px] tracking-[0.12em] text-grafite-muted">CLIQUE PARA AMPLIAR</span>
+            <span className="font-mono text-xs tracking-[0.12em] text-grafite-muted">CLIQUE PARA AMPLIAR</span>
           </div>
           {renderGallery(opportunity.commonAreas)}
         </div>
@@ -216,7 +223,7 @@ export function OportunidadeDetail() {
       {/* Galeria: apartamento */}
       <div style={{ background: palette.cream }} className="py-16">
         <div className="mx-auto max-w-5xl px-6 sm:px-8">
-          <p style={{ color: palette.accentDark }} className="font-mono text-[11px] uppercase tracking-[0.3em]">
+          <p style={{ color: palette.accentDark }} className="font-mono text-xs uppercase tracking-[0.3em]">
             Unidade
           </p>
           <h2
@@ -241,7 +248,7 @@ export function OportunidadeDetail() {
               <img src={simboloNegativo} alt="" className="w-[42px]" />
               <div>
                 <p className="text-sm font-semibold text-white">{agent.name}</p>
-                <p className="mt-0.5 font-mono text-[11px] tracking-[0.14em] text-white/70">
+                <p className="mt-0.5 font-mono text-xs tracking-[0.14em] text-white/70">
                   {agent.creci} · {agent.phone}
                 </p>
               </div>
@@ -265,10 +272,10 @@ export function OportunidadeDetail() {
           aria-modal="true"
           aria-label={opened.label}
           onClick={() => setOpened(null)}
-          className="fixed inset-0 z-[90] flex cursor-zoom-out flex-col items-center justify-center gap-4 bg-[#0f1214]/95 p-6"
+          className="fixed inset-0 z-[90] flex cursor-zoom-out flex-col items-center justify-center gap-4 bg-grafite-noite/95 p-6"
         >
           <img src={opened.src} alt={opened.label} className="max-h-[80vh] max-w-[94vw] object-contain" />
-          <span className="font-mono text-[11px] tracking-[0.2em] text-white/80">{opened.label}</span>
+          <span className="font-mono text-xs tracking-[0.2em] text-white/80">{opened.label}</span>
         </div>
       )}
     </div>

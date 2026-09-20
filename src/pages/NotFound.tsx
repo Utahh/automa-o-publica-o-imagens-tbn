@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { HeroSymbol } from "../components/HeroSymbol";
+import { useSeo } from "../hooks/useSeo";
 
 export function NotFound() {
+  useSeo({ title: "Página não encontrada", noindex: true });
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-grafite-noite px-6 text-center">
       <HeroSymbol className="h-32 w-32" />

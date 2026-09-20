@@ -25,7 +25,7 @@ interface FieldProps {
 function Field({ label, name, span, values, onChange, placeholder, type = "text" }: FieldProps) {
   return (
     <label className={`block ${spanClasses[span]}`}>
-      <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.12em] text-grafite-muted">
+      <span className="mb-1.5 block font-mono text-xs uppercase tracking-[0.12em] text-grafite-muted">
         {label}
       </span>
       <input
@@ -47,9 +47,14 @@ interface PaymentInputProps {
   border: string;
 }
 
+const paymentColumns = { e: "Entrada", p: "Parcelas", s: "Semestrais" } as const;
+
 function PaymentInput({ name, values, onChange, placeholder, border }: PaymentInputProps) {
+  const row = Number(name[1]) + 1;
+  const column = paymentColumns[name[2] as keyof typeof paymentColumns];
   return (
     <input
+      aria-label={`${column}, linha ${row}`}
       value={values[name]}
       onChange={(e) => onChange(name, e.target.value)}
       placeholder={placeholder}
@@ -74,7 +79,7 @@ export function LaunchForm({ launch, values, onChange, aceito, onToggleAceite, o
       <div className="mx-auto max-w-3xl border border-[var(--launch-cream)] bg-white shadow-[0_30px_70px_-40px_rgba(2,29,59,0.4)]">
         <div className="flex flex-wrap items-start justify-between gap-5 px-6 pb-6 pt-9 sm:px-10">
           <div>
-            <p className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.3em] text-grafite-muted">
+            <p className="mb-1.5 font-mono text-xs uppercase tracking-[0.3em] text-grafite-muted">
               Ficha de cadastro
             </p>
             <h1 className="font-launch-serif text-[32px] font-semibold tracking-wide text-[var(--launch-primary)]">
@@ -106,7 +111,7 @@ export function LaunchForm({ launch, values, onChange, aceito, onToggleAceite, o
             <Field label="E-mail" name="email" span={12} values={values} onChange={onChange} placeholder="seu@email.com" type="email" />
           </div>
 
-          <div className="mt-8 bg-[#dbe7f5] py-2.5 text-center font-mono text-xs uppercase tracking-[0.3em] text-[var(--launch-primary)]">
+          <div className="mt-8 bg-azul-claro py-2.5 text-center font-mono text-xs uppercase tracking-[0.3em] text-[var(--launch-primary)]">
             Sugestão de pagamento
           </div>
           <div className="mt-6 grid grid-cols-3 border border-[var(--launch-primary)]">
@@ -130,7 +135,7 @@ export function LaunchForm({ launch, values, onChange, aceito, onToggleAceite, o
             <PaymentInput name="p2s" values={values} onChange={onChange} border="" />
           </div>
 
-          <div className="mt-8 bg-[#dbe7f5] py-2.5 text-center font-mono text-xs uppercase tracking-[0.3em] text-[var(--launch-primary)]">
+          <div className="mt-8 bg-azul-claro py-2.5 text-center font-mono text-xs uppercase tracking-[0.3em] text-[var(--launch-primary)]">
             Observações
           </div>
           <textarea
@@ -141,7 +146,7 @@ export function LaunchForm({ launch, values, onChange, aceito, onToggleAceite, o
           />
 
           <div className="mt-8 border border-[var(--launch-cream)] bg-[var(--launch-cream)] p-6">
-            <p className="mb-3 font-mono text-[10.5px] font-medium uppercase tracking-[0.2em] text-[var(--launch-accent-dark)]">
+            <p className="mb-3 font-mono text-xs font-medium uppercase tracking-[0.2em] text-[var(--launch-accent-dark)]">
               Termo de consentimento LGPD
             </p>
             <p className="mb-4 text-[12.5px] leading-relaxed text-grafite-muted">
@@ -181,7 +186,7 @@ export function LaunchForm({ launch, values, onChange, aceito, onToggleAceite, o
             <button
               type="button"
               onClick={onVoltar}
-              className="border border-[var(--launch-cream)] px-6 py-4 font-display text-[11px] uppercase tracking-[0.15em] text-grafite-muted transition-colors hover:border-[var(--launch-primary)] hover:text-[var(--launch-primary)]"
+              className="border border-[var(--launch-cream)] px-6 py-4 font-display text-xs uppercase tracking-[0.15em] text-grafite-muted transition-colors hover:border-[var(--launch-primary)] hover:text-[var(--launch-primary)]"
             >
               Voltar
             </button>

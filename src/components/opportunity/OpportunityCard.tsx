@@ -16,14 +16,14 @@ export function OpportunityCard({ opportunity, index = 0 }: { opportunity: Oppor
     >
       <Link
         to={`/oportunidades/${opportunity.slug}`}
-        className="group flex flex-col gap-6 rounded-2xl border-l-4 border-azul-sinal bg-grafite p-7 transition-colors duration-300 hover:border-azul-escritura sm:flex-row sm:items-center sm:gap-8 sm:p-9"
+        className="group flex flex-col gap-6 rounded-2xl border border-azul-sinal/40 bg-grafite p-7 transition-colors duration-300 hover:border-azul-escritura sm:flex-row sm:items-center sm:gap-8 sm:p-9"
       >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
             <span className="font-display text-base font-bold italic tracking-tight text-cinza-papel">
               {opportunity.builderLabel}
             </span>
-            <span className="inline-block rounded-full bg-azul-escritura px-3.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.25em] text-cinza-papel">
+            <span className="inline-block rounded-full bg-azul-escritura px-3.5 py-1.5 font-mono text-xs font-medium uppercase tracking-[0.25em] text-cinza-papel">
               {opportunity.badgeLabel}
             </span>
           </div>

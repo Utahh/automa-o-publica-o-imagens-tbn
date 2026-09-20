@@ -12,6 +12,8 @@
   --color-azul-sinal: #79a2d0; /* só sobre grafite */
   --color-cinza-papel: #eff0f1; /* ambientes claros */
   --color-cinza-papel-forte: #e2e4e6;
+  --color-azul-claro: #dbe7f5; /* faixas de título das fichas de lançamento */
+  --color-areia: #e6e2da; /* fundo neutro das fotos de oportunidade */
 
   --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;

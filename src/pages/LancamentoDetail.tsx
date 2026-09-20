@@ -5,18 +5,26 @@ import { Reveal } from "../components/Reveal";
 import { LaunchForm } from "../components/launch/LaunchForm";
 import { LaunchConfirmation } from "../components/launch/LaunchConfirmation";
 import { getLaunchBySlug } from "../data/launches";
+import { trackEvent } from "../lib/analytics";
 import {
   buildLaunchMessage,
   buildLaunchWhatsappLink,
   emptyLaunchFormValues,
   type LaunchFormValues,
 } from "../lib/launchMessage";
+import { useSeo } from "../hooks/useSeo";
+import { useLaunchFonts } from "../hooks/useLaunchFonts";
 
 type View = "pagina" | "form" | "confirmacao";
 
 export function LancamentoDetail() {
   const { slug } = useParams<{ slug: string }>();
   const launch = slug ? getLaunchBySlug(slug) : undefined;
+  useLaunchFonts();
+  useSeo({
+    title: launch ? `${launch.name} ${launch.suffix}`.trim() : undefined,
+    description: launch?.shortDescription,
+  });
 
   const [view, setView] = useState<View>("pagina");
   const [values, setValues] = useState<LaunchFormValues>(emptyLaunchFormValues);
@@ -48,6 +56,7 @@ export function LancamentoDetail() {
     const mensagem = buildLaunchMessage(launch, values, aceiteEm);
     setView("confirmacao");
     window.scrollTo(0, 0);
+    trackEvent({ type: "whatsapp_click", path: window.location.pathname });
     window.open(buildLaunchWhatsappLink(launch, mensagem), "_blank", "noreferrer");
   }
 
@@ -86,7 +95,7 @@ export function LancamentoDetail() {
               <div className="flex flex-wrap items-center gap-4 border-b border-white/15 pb-7">
                 <Link
                   to="/lancamentos"
-                  className="ml-auto flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
+                  className="ml-auto flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2.3} aria-hidden="true" />
                   Lançamentos
@@ -99,7 +108,7 @@ export function LancamentoDetail() {
                     <img src={launch.logo} alt="" className="h-10 w-10 shrink-0 object-contain" />
                     <span
                       style={{ background: launch.palette.accent, color: launch.palette.primary }}
-                      className="inline-block px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.3em]"
+                      className="inline-block px-3.5 py-1.5 font-mono text-xs uppercase tracking-[0.3em]"
                     >
                       Lançamento
                     </span>
@@ -163,7 +172,7 @@ export function LancamentoDetail() {
           <div style={{ background: launch.palette.cream }} className="py-16">
             <div className="mx-auto grid max-w-5xl grid-cols-1 gap-12 px-6 sm:px-8 lg:grid-cols-2">
               <Reveal>
-                <p style={{ color: launch.palette.accentDark }} className="font-mono text-[11px] uppercase tracking-[0.3em]">
+                <p style={{ color: launch.palette.accentDark }} className="font-mono text-xs uppercase tracking-[0.3em]">
                   O empreendimento
                 </p>
                 <h2
@@ -181,7 +190,7 @@ export function LancamentoDetail() {
 
               <Reveal delay={0.08}>
                 <div style={{ background: launch.palette.primary }} className="p-8 text-white">
-                  <p style={{ color: launch.palette.accent }} className="font-mono text-[11px] uppercase tracking-[0.3em]">
+                  <p style={{ color: launch.palette.accent }} className="font-mono text-xs uppercase tracking-[0.3em]">
                     Tipologias
                   </p>
                   {launch.tipologias.map((t) => (

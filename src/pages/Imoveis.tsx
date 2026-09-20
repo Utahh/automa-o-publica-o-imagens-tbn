@@ -7,6 +7,7 @@ import { FilterSelect } from "../components/FilterSelect";
 import { Reveal } from "../components/Reveal";
 import { useProperties } from "../hooks/useProperties";
 import { trackEvent } from "../lib/analytics";
+import { useSeo } from "../hooks/useSeo";
 
 const priceRanges: Record<string, (price: number) => boolean> = {
   "ate-400": (p) => p <= 400000,
@@ -15,6 +16,10 @@ const priceRanges: Record<string, (price: number) => boolean> = {
 };
 
 export function Imoveis() {
+  useSeo({
+    title: "Imóveis à venda e para alugar em Botucatu",
+    description: "Casas e apartamentos em Botucatu/SP, com preço, metragem e bairro. Filtre por região, tipo e valor.",
+  });
   const { properties } = useProperties();
   const neighborhoods = Array.from(new Set(properties.map((p) => p.neighborhood).filter(Boolean))).sort();
   const types = Array.from(new Set(properties.map((p) => p.type).filter(Boolean))).sort();
@@ -67,10 +72,7 @@ export function Imoveis() {
     <div className="min-h-screen bg-cinza-papel pb-16 pt-28">
       <div className="mx-auto max-w-7xl px-6 sm:px-8">
         <Reveal>
-          <p aria-live="polite" className="font-mono text-xs font-medium uppercase tracking-[0.3em] text-azul-escritura">
-            {filtered.length} {filtered.length === 1 ? "imóvel encontrado" : "imóveis encontrados"}
-          </p>
-          <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <h1 className="text-balance font-display text-3xl font-semibold tracking-tight text-grafite sm:text-4xl">
               Todos os imóveis
             </h1>
@@ -78,12 +80,15 @@ export function Imoveis() {
               type="button"
               onClick={() => setFiltersOpen((v) => !v)}
               aria-expanded={filtersOpen}
-              className="flex items-center gap-2 rounded-full border border-grafite/15 px-4 py-2.5 font-display text-sm font-medium text-grafite [touch-action:manipulation] md:hidden"
+              className="flex min-h-11 items-center gap-2 rounded-full border border-grafite/15 px-4 py-2.5 font-display text-sm font-medium text-grafite [touch-action:manipulation] md:hidden"
             >
               <SlidersHorizontal className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
               Filtros
             </button>
           </div>
+          <p aria-live="polite" className="mt-2 font-display text-sm text-grafite-muted">
+            {filtered.length} {filtered.length === 1 ? "imóvel encontrado" : "imóveis encontrados"}
+          </p>
         </Reveal>
 
         <div

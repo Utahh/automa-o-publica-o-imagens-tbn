@@ -33,10 +33,7 @@ export function ValuesSection() {
     <section className="bg-cinza-papel py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-6 sm:px-8">
         <Reveal>
-          <p className="font-mono text-xs font-medium uppercase tracking-[0.3em] text-azul-escritura">
-            Por que trabalhar comigo
-          </p>
-          <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold tracking-tight text-grafite sm:text-4xl">
+          <h2 className="max-w-xl font-display text-3xl font-semibold tracking-tight text-grafite sm:text-4xl">
             A mesma planta, sem parede escondida.
           </h2>
         </Reveal>

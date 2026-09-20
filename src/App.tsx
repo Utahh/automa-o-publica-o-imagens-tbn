@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
@@ -16,9 +16,9 @@ import { OportunidadeDetail } from "./pages/OportunidadeDetail";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/admin/Login";
 import { AdminLayout } from "./pages/admin/AdminLayout";
-import { Dashboard } from "./pages/admin/Dashboard";
+import { Painel } from "./pages/admin/Painel";
+import { PropertyList } from "./pages/admin/PropertyList";
 import { PropertyForm } from "./pages/admin/PropertyForm";
-import { Stats } from "./pages/admin/Stats";
 import { trackEvent } from "./lib/analytics";
 
 function PageFade({ children }: { children: ReactNode }) {
@@ -42,12 +42,31 @@ function PublicSite() {
     trackEvent({ type: "page_view", path: location.pathname });
   }, [location.pathname]);
 
+  // Conta como "contato com o corretor" qualquer clique num link do
+  // WhatsApp do site — um só ouvinte aqui evita espalhar o rastreio por
+  // cada botão. O `path` diz de qual página (e, nos imóveis, de qual
+  // imóvel) a pessoa saiu.
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      const link = (e.target as Element | null)?.closest?.("a[href^='https://wa.me/']");
+      if (link) trackEvent({ type: "whatsapp_click", path: window.location.pathname });
+    }
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
+      <a
+        href="#conteudo"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-azul-escritura focus:px-5 focus:py-3 focus:font-display focus:text-sm focus:font-semibold focus:text-cinza-papel"
+      >
+        Pular para o conteúdo
+      </a>
       <ScrollToTop />
       <Navbar transparentAtTop={isHome} />
 
-      <main className="flex-1">
+      <main id="conteudo" tabIndex={-1} className="flex-1 outline-none">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageFade><Home /></PageFade>} />
@@ -63,7 +82,7 @@ function PublicSite() {
       </main>
 
       <Footer />
-      <WhatsAppButton variant="floating" />
+      <WhatsAppButton variant="floating" className="md:hidden" />
     </div>
   );
 }
@@ -80,10 +99,11 @@ function App() {
           </RequireAdmin>
         }
       >
-        <Route index element={<Dashboard />} />
+        <Route index element={<Painel />} />
+        <Route path="imoveis" element={<PropertyList />} />
         <Route path="imoveis/novo" element={<PropertyForm />} />
         <Route path="imoveis/:id" element={<PropertyForm />} />
-        <Route path="estatisticas" element={<Stats />} />
+        <Route path="estatisticas" element={<Navigate to="/admin" replace />} />
       </Route>
       <Route path="/*" element={<PublicSite />} />
     </Routes>

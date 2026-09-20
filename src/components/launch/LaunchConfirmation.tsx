@@ -32,7 +32,7 @@ export function LaunchConfirmation({ launch, values, dataAceite, onCorrigir }: L
     <div className="px-5 py-9 sm:px-6">
       <div className="mx-auto mb-5 flex max-w-3xl flex-wrap items-center gap-4 bg-[var(--launch-primary)] px-6 py-5 text-white print:hidden">
         <div>
-          <p className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.24em] text-[var(--launch-accent)]">
+          <p className="mb-1 font-mono text-xs uppercase tracking-[0.24em] text-[var(--launch-accent)]">
             Enviado ao corretor
           </p>
           <p className="text-[13.5px] leading-relaxed">
@@ -43,14 +43,14 @@ export function LaunchConfirmation({ launch, values, dataAceite, onCorrigir }: L
           <button
             type="button"
             onClick={() => window.print()}
-            className="border border-white/30 px-5 py-3 font-display text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-white/10"
+            className="border border-white/30 px-5 py-3 font-display text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-white/10"
           >
             Imprimir / PDF
           </button>
           <button
             type="button"
             onClick={onCorrigir}
-            className="bg-[var(--launch-accent)] px-5 py-3 font-display text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--launch-primary)] transition-colors hover:brightness-105"
+            className="bg-[var(--launch-accent)] px-5 py-3 font-display text-xs font-semibold uppercase tracking-[0.15em] text-[var(--launch-primary)] transition-colors hover:brightness-105"
           >
             Corrigir dados
           </button>
@@ -60,7 +60,7 @@ export function LaunchConfirmation({ launch, values, dataAceite, onCorrigir }: L
       <div className="mx-auto max-w-3xl border border-[var(--launch-cream)] bg-white p-9 shadow-[0_30px_70px_-40px_rgba(2,29,59,0.4)]">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.3em] text-grafite-muted">
+            <p className="mb-1.5 font-mono text-xs uppercase tracking-[0.3em] text-grafite-muted">
               Ficha de cadastro
             </p>
             <h1 className="font-launch-serif text-[30px] font-semibold tracking-wide text-[var(--launch-primary)]">
@@ -88,7 +88,7 @@ export function LaunchConfirmation({ launch, values, dataAceite, onCorrigir }: L
           ))}
         </div>
 
-        <div className="mt-7 bg-[#dbe7f5] py-2.5 text-center font-mono text-xs uppercase tracking-[0.3em] text-[var(--launch-primary)]">
+        <div className="mt-7 bg-azul-claro py-2.5 text-center font-mono text-xs uppercase tracking-[0.3em] text-[var(--launch-primary)]">
           Sugestão de pagamento
         </div>
         <div className="mt-5 grid grid-cols-3 border border-[var(--launch-primary)]">
@@ -110,14 +110,14 @@ export function LaunchConfirmation({ launch, values, dataAceite, onCorrigir }: L
           ))}
         </div>
 
-        <div className="mt-7 bg-[#dbe7f5] py-2.5 text-center font-mono text-xs uppercase tracking-[0.3em] text-[var(--launch-primary)]">
+        <div className="mt-7 bg-azul-claro py-2.5 text-center font-mono text-xs uppercase tracking-[0.3em] text-[var(--launch-primary)]">
           Observações
         </div>
         <p className="mt-6 min-h-[70px] border-b border-[var(--launch-primary)] pb-2.5 text-sm leading-relaxed text-[var(--launch-primary)]">
           {values.obs.trim() || "Sem observações."}
         </p>
 
-        <div className="mt-7 border-l-4 border-[var(--launch-accent)] bg-[var(--launch-cream)] px-5 py-4">
+        <div className="mt-7 border border-[var(--launch-accent)] bg-[var(--launch-cream)] px-5 py-4">
           <p className="text-xs leading-relaxed text-grafite-muted">
             Consentimento LGPD aceito pelo cliente em {dataAceite}. Autorização para tratamento dos dados com
             finalidade de atendimento comercial do lançamento {launch.builderName} (Lei nº 13.709/2018).
@@ -129,11 +129,11 @@ export function LaunchConfirmation({ launch, values, dataAceite, onCorrigir }: L
             <p className="text-[12.5px] font-semibold text-[var(--launch-primary)]">
               {agent.name} · {agent.role}
             </p>
-            <p className="mt-0.5 font-mono text-[11px] text-grafite-muted">
+            <p className="mt-0.5 font-mono text-xs text-grafite-muted">
               {agent.phone} · wa.me/{numero}
             </p>
           </div>
-          <p className="font-mono text-[11px] text-grafite-muted">{agent.creci}</p>
+          <p className="font-mono text-xs text-grafite-muted">{agent.creci}</p>
         </div>
       </div>
     </div>

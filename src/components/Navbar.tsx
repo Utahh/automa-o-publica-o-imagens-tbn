@@ -31,8 +31,8 @@ export function Navbar({ transparentAtTop = false }: NavbarProps) {
       )}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5 sm:px-8">
-        <Link to="/" className="flex items-center" onClick={() => setOpen(false)}>
-          <BrandMark mode="symbol" variant="negativo" className="h-10 w-10 shrink-0 sm:hidden" />
+        <Link to="/" className="flex min-h-11 items-center" onClick={() => setOpen(false)}>
+          <BrandMark mode="symbol" variant="negativo" className="h-11 w-11 shrink-0 sm:hidden" />
           <BrandMark mode="wordmark" variant="negativo" className="hidden h-9 w-auto sm:block" />
         </Link>
 
@@ -43,7 +43,7 @@ export function Navbar({ transparentAtTop = false }: NavbarProps) {
               to={link.to}
               className={({ isActive }) =>
                 clsx(
-                  "font-display text-sm font-medium tracking-tight text-papel-muted transition-colors hover:text-cinza-papel",
+                  "inline-flex min-h-11 items-center font-display text-sm font-medium tracking-tight text-papel-muted transition-colors hover:text-cinza-papel",
                   isActive && link.to !== "/" && "text-cinza-papel",
                 )
               }
@@ -57,7 +57,7 @@ export function Navbar({ transparentAtTop = false }: NavbarProps) {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-cinza-papel [touch-action:manipulation] md:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-cinza-papel [touch-action:manipulation] md:hidden"
           aria-label={open ? "Fechar menu" : "Abrir menu"}
           aria-expanded={open}
         >

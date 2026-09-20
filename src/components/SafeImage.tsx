@@ -1,12 +1,15 @@
 import { useState, type ImgHTMLAttributes } from "react";
 import clsx from "clsx";
+import { imageSrcSet, optimizeImage } from "../lib/cloudinary";
 
 interface SafeImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   wrapperClassName?: string;
+  /** Largura exibida em px: ativa o redimensionamento das fotos do Cloudinary. */
+  displayWidth?: number;
 }
 
 /** <img> com respaldo visual da marca caso a foto não carregue. */
-export function SafeImage({ wrapperClassName, className, alt, ...props }: SafeImageProps) {
+export function SafeImage({ wrapperClassName, className, alt, displayWidth, src, ...props }: SafeImageProps) {
   const [failed, setFailed] = useState(false);
 
   if (failed) {
@@ -35,6 +38,9 @@ export function SafeImage({ wrapperClassName, className, alt, ...props }: SafeIm
     <img
       className={className}
       alt={alt}
+      src={src && displayWidth ? optimizeImage(src, displayWidth * 2) : src}
+      srcSet={src && displayWidth ? imageSrcSet(src, displayWidth) : undefined}
+      sizes={src && displayWidth ? `${displayWidth}px` : undefined}
       loading="lazy"
       onError={() => setFailed(true)}
       {...props}

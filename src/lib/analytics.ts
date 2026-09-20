@@ -26,8 +26,51 @@ function getSessionId(): string {
   }
 }
 
+const ORIGIN_KEY = "tbn_origin";
+
+const REFERRER_LABELS: [RegExp, string][] = [
+  [/(^|\.)google\./, "Google"],
+  [/(^|\.)instagram\.com$/, "Instagram"],
+  [/(^|\.)(facebook|fb)\.com$/, "Facebook"],
+  [/(^|\.)(whatsapp\.com|wa\.me)$/, "WhatsApp"],
+  [/(^|\.)bing\.com$/, "Bing"],
+  [/(^|\.)youtube\.com$/, "YouTube"],
+  [/(^|\.)tiktok\.com$/, "TikTok"],
+];
+
+/** De onde a visita veio: `utm_source` (+ `utm_campaign`) quando o link
+ *  tem, senão o site de referência. Calculado uma vez, na primeira
+ *  chamada da visita, e guardado junto do ID da sessão — não identifica
+ *  ninguém, só diz "Instagram", "Google", "direto" etc. */
+function getOrigin(): string {
+  try {
+    const saved = sessionStorage.getItem(ORIGIN_KEY);
+    if (saved) return saved;
+
+    const params = new URLSearchParams(window.location.search);
+    const source = params.get("utm_source")?.trim().toLowerCase();
+    const campaign = params.get("utm_campaign")?.trim().toLowerCase();
+    let origin = "Direto";
+
+    if (source) {
+      origin = campaign ? `${source} · ${campaign}` : source;
+    } else if (document.referrer) {
+      const host = new URL(document.referrer).hostname.replace(/^www\./, "");
+      if (host && host !== window.location.hostname.replace(/^www\./, "")) {
+        origin = REFERRER_LABELS.find(([re]) => re.test(host))?.[1] ?? host;
+      }
+    }
+
+    sessionStorage.setItem(ORIGIN_KEY, origin);
+    return origin;
+  } catch {
+    return "Direto";
+  }
+}
+
 type TrackEvent =
   | { type: "page_view"; path: string }
+  | { type: "whatsapp_click"; path: string }
   | {
       type: "property_view";
       path: string;
@@ -50,6 +93,7 @@ export function trackEvent(event: TrackEvent) {
   addDoc(collection(db, "analytics_events"), {
     ...event,
     sessionId: getSessionId(),
+    origin: getOrigin(),
     timestamp: serverTimestamp(),
   }).catch(() => {});
 }

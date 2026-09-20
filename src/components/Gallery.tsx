@@ -25,6 +25,7 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
             <SafeImage
               src={images[index]}
               alt={`${alt}, foto ${index + 1}`}
+              displayWidth={1000}
               wrapperClassName="h-full w-full"
               className="h-full w-full object-cover"
             />
@@ -49,7 +50,7 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
             >
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
             </button>
-            <span className="absolute bottom-3 right-3 rounded-full bg-grafite-noite/70 px-3 py-1 font-mono-tabular font-mono text-[11px] text-cinza-papel backdrop-blur-sm">
+            <span className="absolute bottom-3 right-3 rounded-full bg-grafite-noite/70 px-3 py-1 font-mono-tabular font-mono text-xs text-cinza-papel backdrop-blur-sm">
               {index + 1} / {images.length}
             </span>
           </>
@@ -69,7 +70,7 @@ export function Gallery({ images, alt }: { images: string[]; alt: string }) {
                 i === index ? "ring-azul-escritura" : "ring-transparent opacity-70 hover:opacity-100"
               }`}
             >
-              <SafeImage src={img} alt="" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
+              <SafeImage src={img} alt="" displayWidth={100} wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
             </button>
           ))}
         </div>

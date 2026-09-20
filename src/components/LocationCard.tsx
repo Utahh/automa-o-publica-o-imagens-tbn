@@ -9,6 +9,11 @@ import type { Property } from "../types";
 // visualmente que a área mostrada é aproximada, nunca um pino exato.
 const APPROXIMATE_RADIUS_METERS = 350;
 
+// O Leaflet desenha em canvas e não lê classes: pega a cor do token do tema.
+function brandColor() {
+  return getComputedStyle(document.documentElement).getPropertyValue("--color-azul-escritura").trim() || "#27527f";
+}
+
 function LocationMap({ lat, lng }: { lat: number; lng: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -33,11 +38,12 @@ function LocationMap({ lat, lng }: { lat: number; lng: number }) {
       maxZoom: 19,
     }).addTo(map);
 
+    const color = brandColor();
     L.circle([lat, lng], {
       radius: APPROXIMATE_RADIUS_METERS,
-      color: "#27527F",
+      color,
       weight: 1.5,
-      fillColor: "#27527F",
+      fillColor: color,
       fillOpacity: 0.18,
     }).addTo(map);
 
@@ -52,9 +58,9 @@ function LocationMap({ lat, lng }: { lat: number; lng: number }) {
 function LocationPlaceholder() {
   return (
     <div className="relative flex h-40 items-center justify-center overflow-hidden bg-grafite-noite">
-      <svg className="absolute inset-0 h-full w-full opacity-20" aria-hidden="true">
+      <svg className="absolute inset-0 h-full w-full text-cinza-papel opacity-20" aria-hidden="true">
         <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
-          <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#EFF0F1" strokeWidth="1" />
+          <path d="M 28 0 L 0 0 0 28" fill="none" stroke="currentColor" strokeWidth="1" />
         </pattern>
         <rect width="100%" height="100%" fill="url(#grid)" />
       </svg>
@@ -81,7 +87,7 @@ export function LocationCard({ property }: { property: Property }) {
           </p>
         </div>
         <p className="rounded-lg bg-cinza-papel px-3.5 py-3 font-display text-[13px] leading-relaxed text-grafite-muted">
-          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-azul-escritura">
+          <span className="font-mono text-xs font-medium uppercase tracking-[0.15em] text-azul-escritura">
             O que só quem mora perto sabe
           </span>
           <br />

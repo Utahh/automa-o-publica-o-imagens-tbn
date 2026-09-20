@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { MapPin, BedDouble, Bath, Ruler } from "lucide-react";
 import type { Property } from "../types";
-import { formatPrice, formatArea } from "../lib/format";
+import { formatPrice, formatArea, shortTitle } from "../lib/format";
 import { SafeImage } from "./SafeImage";
 
 export function PropertyCard({
@@ -35,14 +35,15 @@ export function PropertyCard({
           <SafeImage
             src={property.cover}
             alt={property.title}
+            displayWidth={420}
             wrapperClassName="h-full w-full"
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           />
           <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3.5">
-            <span className="rounded-full bg-grafite-noite/85 px-3 py-1 font-mono text-[11px] font-medium tracking-wide text-cinza-papel backdrop-blur-sm">
+            <span className="rounded-full bg-grafite-noite/85 px-3 py-1 font-mono text-xs font-medium tracking-wide text-cinza-papel backdrop-blur-sm">
               {property.dealType}
             </span>
-            <span className="rounded-full bg-cinza-papel/90 px-3 py-1 font-mono text-[11px] font-medium tracking-wide text-grafite backdrop-blur-sm">
+            <span className="rounded-full bg-cinza-papel/90 px-3 py-1 font-mono text-xs font-medium tracking-wide text-grafite backdrop-blur-sm">
               {property.type}
             </span>
           </div>
@@ -51,7 +52,7 @@ export function PropertyCard({
         <div className="flex flex-1 flex-col gap-3 p-5">
           <div className="min-w-0">
             <h3 className="line-clamp-2 text-balance font-display text-[17px] font-semibold leading-snug tracking-tight text-grafite">
-              {property.title}
+              {shortTitle(property.title)}
             </h3>
             {(property.neighborhood || property.city) && (
               <p className="mt-1 flex items-center gap-1.5 truncate font-display text-[13px] text-grafite-muted">

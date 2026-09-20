@@ -7,11 +7,11 @@ export function CTASection() {
   return (
     <section className="relative overflow-hidden bg-grafite-noite py-20 sm:py-24">
       <div className="pointer-events-none absolute -right-16 top-1/2 hidden h-64 w-64 -translate-y-1/2 opacity-[0.06] sm:block">
-        <svg viewBox="0 0 120 120" className="h-full w-full">
-          <rect x="8" y="8" width="55.15" height="39.18" fill="#EFF0F1" />
-          <rect x="71.15" y="8" width="40.85" height="39.18" fill="#EFF0F1" />
-          <rect x="8" y="55.18" width="55.15" height="56.82" fill="#EFF0F1" />
-          <rect x="71.15" y="55.18" width="40.85" height="56.82" fill="#EFF0F1" />
+        <svg viewBox="0 0 120 120" className="h-full w-full text-cinza-papel">
+          <rect x="8" y="8" width="55.15" height="39.18" fill="currentColor" />
+          <rect x="71.15" y="8" width="40.85" height="39.18" fill="currentColor" />
+          <rect x="8" y="55.18" width="55.15" height="56.82" fill="currentColor" />
+          <rect x="71.15" y="55.18" width="40.85" height="56.82" fill="currentColor" />
         </svg>
       </div>
 

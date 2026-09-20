@@ -1,18 +1,20 @@
 import { Reveal } from "../components/Reveal";
 import { LaunchCard } from "../components/launch/LaunchCard";
 import { launches } from "../data/launches";
+import { useSeo } from "../hooks/useSeo";
 
 export function Lancamentos() {
+  useSeo({
+    title: "Lançamentos em Botucatu",
+    description: "Empreendimentos em lançamento em Botucatu/SP, com plantas, lazer e condições especiais.",
+  });
   const ativos = launches.filter((l) => l.status === "lancamento");
 
   return (
     <div className="min-h-screen bg-grafite-noite pb-20 pt-28">
       <div className="mx-auto max-w-7xl px-6 sm:px-8">
         <Reveal>
-          <p className="font-mono text-xs font-medium uppercase tracking-[0.3em] text-azul-sinal">
-            Toninho Bomnome
-          </p>
-          <h1 className="mt-3 text-balance font-display text-3xl font-semibold tracking-tight text-cinza-papel sm:text-4xl">
+          <h1 className="text-balance font-display text-3xl font-semibold tracking-tight text-cinza-papel sm:text-4xl">
             Lançamentos
           </h1>
           <p className="mt-3 max-w-2xl font-display text-sm leading-relaxed text-papel-muted sm:text-[15px]">

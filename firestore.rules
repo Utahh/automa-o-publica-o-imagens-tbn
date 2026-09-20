@@ -28,7 +28,7 @@ service cloud.firestore {
     // admin, que só lê (painel de estatísticas em /admin/estatisticas).
     match /analytics_events/{eventId} {
       allow read: if request.auth != null && request.auth.token.admin == true;
-      allow create: if request.resource.data.type in ['page_view', 'property_view', 'search']
+      allow create: if request.resource.data.type in ['page_view', 'property_view', 'search', 'whatsapp_click']
         && request.resource.data.path is string
         && request.resource.data.path.size() <= 300
         && request.resource.data.sessionId is string

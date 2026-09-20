@@ -15,10 +15,10 @@ export function LaunchCard({ launch, index = 0 }: { launch: Launch; index?: numb
     >
       <Link
         to={`/lancamentos/${launch.slug}`}
-        className="group flex flex-col gap-6 rounded-2xl border-l-4 border-azul-escritura bg-grafite p-7 transition-colors duration-300 hover:border-azul-sinal sm:flex-row sm:items-center sm:gap-8 sm:p-9"
+        className="group flex flex-col gap-6 rounded-2xl border border-azul-escritura/40 bg-grafite p-7 transition-colors duration-300 hover:border-azul-sinal sm:flex-row sm:items-center sm:gap-8 sm:p-9"
       >
         <div className="min-w-0 flex-1">
-          <span className="inline-block rounded-full bg-azul-escritura px-3.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.25em] text-cinza-papel">
+          <span className="inline-block rounded-full bg-azul-escritura px-3.5 py-1.5 font-mono text-xs font-medium uppercase tracking-[0.25em] text-cinza-papel">
             Em lançamento
           </span>
           <h2 className="mt-5 text-balance font-display text-2xl font-semibold tracking-tight text-cinza-papel sm:text-3xl">

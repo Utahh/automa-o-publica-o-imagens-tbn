@@ -46,7 +46,7 @@ export function FilterSelect({
 
   return (
     <div className="flex flex-1 flex-col gap-1">
-      <span id={labelId} className="whitespace-nowrap font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-grafite-muted">
+      <span id={labelId} className="whitespace-nowrap font-mono text-xs font-medium uppercase tracking-[0.2em] text-grafite-muted">
         {label}
       </span>
       <Select.Root value={value || ALL_VALUE} onValueChange={(v) => onChange(v === ALL_VALUE ? "" : v)}>
@@ -57,7 +57,7 @@ export function FilterSelect({
             // então o truncamento é aplicado aqui via seletor de filho —
             // min-w-0 no span é o que permite ele encolher e reticenciar
             // em vez de quebrar linha dentro do flex.
-            "flex w-full min-w-0 items-center justify-between gap-2 rounded-lg bg-transparent text-left font-display text-[14.5px] font-semibold text-grafite outline-none [touch-action:manipulation] [&>span]:min-w-0 [&>span]:flex-1 [&>span]:truncate focus-visible:ring-2 focus-visible:ring-azul-sinal focus-visible:ring-offset-2 data-[placeholder]:font-medium data-[placeholder]:text-grafite-muted",
+            "flex min-h-11 w-full min-w-0 items-center justify-between gap-2 rounded-lg md:min-h-0 bg-transparent text-left font-display text-[14.5px] font-semibold text-grafite outline-none [touch-action:manipulation] [&>span]:min-w-0 [&>span]:flex-1 [&>span]:truncate focus-visible:ring-2 focus-visible:ring-azul-sinal focus-visible:ring-offset-2 data-[placeholder]:font-medium data-[placeholder]:text-grafite-muted",
             triggerClassName,
           )}
         >

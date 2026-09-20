@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { BarChart3, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { SafeImage } from "../../components/SafeImage";
 import { Toggle } from "../../components/admin/Toggle";
 import { useAllProperties } from "../../hooks/useProperties";
@@ -12,7 +12,7 @@ interface JustSavedState {
   justSaved?: { title: string; published: boolean; isNew: boolean };
 }
 
-export function Dashboard() {
+export function PropertyList() {
   const { properties, loading, error, refresh } = useAllProperties();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -82,13 +82,6 @@ export function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            to="/admin/estatisticas"
-            className="flex items-center gap-1.5 rounded-xl px-4 py-2.5 font-display text-sm font-semibold text-grafite-muted ring-1 ring-grafite/15 transition-colors hover:text-azul-escritura"
-          >
-            <BarChart3 className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
-            Estatísticas
-          </Link>
           <Link
             to="/admin/imoveis/novo"
             className="rounded-xl bg-azul-escritura px-5 py-2.5 font-display text-sm font-semibold text-cinza-papel transition-colors hover:bg-azul-escritura-forte"
